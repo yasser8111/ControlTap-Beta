@@ -1,0 +1,656 @@
+/**
+ * UIManager
+ * Only concerns itself with reading state and updating the DOM visually.
+ * Emits events via callbacks that the Controller listens to.
+ */
+class UIManager {
+  constructor() {
+    this.elements = {
+      board: document.getElementById("board"),
+      bgVideo: document.getElementById("bgVideo"),
+      modals: {
+        site: document.getElementById("siteModal"),
+        customize: document.getElementById("customizeModal"),
+        templates: document.getElementById("templatesModal"),
+        settings: document.getElementById("settingsModal"),
+        about: document.getElementById("aboutModal"),
+      },
+      inputs: {
+        siteName: document.getElementById("siteNameInput"),
+        siteUrl: document.getElementById("siteUrlInput"),
+        siteDesc: document.getElementById("siteDescInput"),
+        groupId: document.getElementById("currentGroupId"),
+        themeMode: document.getElementById("themeModeInput"),
+        primaryColor: document.getElementById("primaryColorInput"),
+        cardOpacity: document.getElementById("cardOpacityInput"),
+        bgFile: document.getElementById("bgFileInput"),
+        colCount: document.getElementById("colCountInput"),
+        cardSize: document.getElementById("cardSizeInput"),
+        simpleMode: document.getElementById("simpleModeInput"),
+        openInNewTab: document.getElementById("openInNewTabInput"),
+        language: document.getElementById("languageInput"),
+      },
+      containers: {
+        bgPresets: document.getElementById("bgPresetsContainer"),
+        fileUploadLabel: document.getElementById("fileUploadLabel"),
+        userMediaPreview: document.getElementById("currentUserMediaPreview"),
+        opacityValue: document.getElementById("opacityValueDisplay"),
+        colCountValue: document.getElementById("colCountValue"),
+        cardSizeValue: document.getElementById("cardSizeValue"),
+        pagesTabs: document.getElementById("pagesTabs"),
+      },
+    };
+
+    this.objectUrlBlob = null;
+  }
+
+  async applySettings(settings, mediaStorage) {
+    const root = document.documentElement;
+    const lang = settings.language || "ar";
+    root.setAttribute("lang", lang);
+    root.setAttribute("dir", lang === "ar" ? "rtl" : "ltr");
+    this.applyTranslations(lang);
+
+    root.style.setProperty("--primary-color", settings.primaryColor);
+    root.style.setProperty("--card-opacity", settings.cardOpacity);
+    const cardScale = Math.max(0.5, (settings.cardSize || 100) / 100);
+    root.style.setProperty("--card-scale", cardScale);
+    this.elements.board.style.zoom = cardScale;
+    document.body.className = `${settings.themeMode}-theme`;
+    if (settings.simpleMode) {
+      document.body.classList.add("simple-mode");
+    } else {
+      document.body.classList.remove("simple-mode");
+    }
+
+    if (this.objectUrlBlob) {
+      URL.revokeObjectURL(this.objectUrlBlob);
+      this.objectUrlBlob = null;
+    }
+
+    const { bgVideo } = this.elements;
+
+    if (settings.bgType === "preset") {
+      bgVideo.style.display = "none";
+      bgVideo.pause();
+      bgVideo.removeAttribute("src");
+      const bgUrl = settings.bgImage ? `url('${settings.bgImage}')` : "none";
+      root.style.setProperty("--bg-image", bgUrl);
+      // Fallback: Direct body style just in case variable fails
+      document.body.style.backgroundImage = bgUrl;
+    } else if (
+      settings.bgType === "localImage" ||
+      settings.bgType === "localVideo"
+    ) {
+      const media = await mediaStorage.loadMedia("customBg");
+      if (media?.file) {
+        this.objectUrlBlob = URL.createObjectURL(media.file);
+        if (media.isVideo) {
+          root.style.setProperty("--bg-image", "none");
+          document.body.style.backgroundImage = "none";
+          bgVideo.src = this.objectUrlBlob;
+          bgVideo.style.display = "block";
+          bgVideo.play().catch((e) => console.warn("Autoplay blocked:", e));
+        } else {
+          bgVideo.style.display = "none";
+          bgVideo.pause();
+          const bgUrl = `url('${this.objectUrlBlob}')`;
+          root.style.setProperty("--bg-image", bgUrl);
+          document.body.style.backgroundImage = bgUrl;
+        }
+      } else {
+        root.style.setProperty("--bg-image", "none");
+        document.body.style.backgroundImage = "none";
+        bgVideo.style.display = "none";
+      }
+    } else if (settings.bgType === "videoUrl") {
+      root.style.setProperty("--bg-image", "none");
+      document.body.style.backgroundImage = "none";
+      bgVideo.src = settings.bgImage;
+      bgVideo.style.display = "block";
+      bgVideo.play().catch((e) => console.warn("Autoplay blocked:", e));
+    } else {
+      root.style.setProperty("--bg-image", "none");
+      document.body.style.backgroundImage = "none";
+      bgVideo.style.display = "none";
+    }
+
+    // Update preview in customization modal if open
+    this.updateUserMediaPreview(mediaStorage, settings);
+
+    if (this.elements.containers.opacityValue) {
+      this.elements.containers.opacityValue.textContent = `${Math.round(settings.cardOpacity * 100)}%`;
+    }
+  }
+
+  applyTranslations(lang) {
+    if (!window.TRANSLATIONS) return;
+    const texts = window.TRANSLATIONS[lang] || window.TRANSLATIONS.ar;
+    document.querySelectorAll("[data-i18n]").forEach((el) => {
+      const key = el.getAttribute("data-i18n");
+      if (texts[key]) el.textContent = texts[key];
+    });
+    document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+      const key = el.getAttribute("data-i18n-placeholder");
+      if (texts[key]) el.setAttribute("placeholder", texts[key]);
+    });
+    document.querySelectorAll("[data-i18n-aria]").forEach((el) => {
+        const key = el.getAttribute("data-i18n-aria");
+        if (texts[key]) el.setAttribute("aria-label", texts[key]);
+    });
+    document.querySelectorAll("[data-i18n-content]").forEach((el) => {
+        const key = el.getAttribute("data-i18n-content");
+        if (texts[key]) el.setAttribute("content", texts[key]);
+    });
+    if (texts.page_title) document.title = texts.page_title;
+  }
+
+  getTranslation(key, lang) {
+    if (!window.TRANSLATIONS) return key;
+    const currentLang = lang || window.App?.stateManager?.getState()?.settings?.language || "ar";
+    return window.TRANSLATIONS[currentLang]?.[key] || window.TRANSLATIONS.ar[key] || key;
+  }
+
+  async updateUserMediaPreview(mediaStorage, currentSettings) {
+    const container = this.elements.containers.userMediaPreview;
+    if (!container) return;
+
+    const settings =
+      currentSettings || window.App?.stateManager?.getState()?.settings;
+    if (!settings) return;
+
+    container.innerHTML = "";
+
+    if (settings.bgType === "videoUrl") {
+      const video = document.createElement("video");
+      video.src = settings.bgImage;
+      video.muted = true;
+      video.autoplay = true;
+      video.loop = true;
+      video.style.width = "100%";
+      video.style.height = "100%";
+      video.style.objectFit = "cover";
+      container.appendChild(video);
+      return;
+    }
+
+    if (settings.bgType === "preset") {
+      const img = document.createElement("div");
+      img.className = "preview-img-box";
+      img.style.width = "100%";
+      img.style.height = "100%";
+      img.style.backgroundImage = `url('${settings.bgImage}')`;
+      img.style.backgroundSize = "cover";
+      img.style.backgroundPosition = "center";
+      container.appendChild(img);
+      return;
+    }
+
+    const media = await mediaStorage.loadMedia("customBg");
+    if (!media || !media.file) {
+      container.innerHTML =
+        `<span style="font-size: 12px; opacity: 0.5;">${this.getTranslation("no_bg")}</span>`;
+      return;
+    }
+
+    const url = URL.createObjectURL(media.file);
+
+    if (media.isVideo) {
+      const video = document.createElement("video");
+      video.src = url;
+      video.muted = true;
+      video.autoplay = true;
+      video.loop = true;
+      video.style.width = "100%";
+      video.style.height = "100%";
+      video.style.objectFit = "cover";
+      container.appendChild(video);
+    } else {
+      const img = document.createElement("div");
+      img.className = "preview-img-box";
+      img.style.width = "100%";
+      img.style.height = "100%";
+      img.style.backgroundImage = `url('${url}')`;
+      img.style.backgroundSize = "cover";
+      img.style.backgroundPosition = "center";
+      container.appendChild(img);
+    }
+  }
+
+  getFavicon(url) {
+    try {
+      const domain = new URL(url).hostname;
+      return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+    } catch {
+      return `https://www.google.com/s2/favicons?domain=google.com&sz=64`;
+    }
+  }
+
+  renderPresets(currentSettings, onSelectPreset) {
+    const { bgPresets } = this.elements.containers;
+    if (!bgPresets) return; // Fix: Prevent crash if element is missing
+    bgPresets.innerHTML = "";
+
+    BACKGROUND_PRESETS.forEach((preset) => {
+      const presetEl = document.createElement("button");
+      presetEl.className = "bg-preset-item";
+      presetEl.style.backgroundImage = `url('${preset.url}')`;
+      presetEl.setAttribute(
+        "aria-label",
+        `${this.getTranslation("select_theme")} ${preset.theme === "dark" ? this.getTranslation("theme_dark") : this.getTranslation("theme_light")}`,
+      );
+
+      if (
+        currentSettings.bgType === "preset" &&
+        currentSettings.bgImage === preset.url
+      ) {
+        presetEl.classList.add("active");
+      }
+
+      presetEl.addEventListener("click", () =>
+        onSelectPreset(preset, presetEl),
+      );
+      bgPresets.appendChild(presetEl);
+    });
+  }
+
+  renderTemplates(onSelectTemplate) {
+    const grid = document.getElementById("templatesGrid");
+    grid.innerHTML = "";
+    
+    const state = window.App?.stateManager?.getState();
+    const customTemplates = state?.customTemplates || [];
+    
+    const allTemplates = [...customTemplates, ...UI_TEMPLATES];
+
+    // Add 'Create Template' card
+    const createItem = document.createElement("button");
+    createItem.className = "template-item add-template-card";
+    createItem.style.border = "2px dashed var(--primary-color)";
+    createItem.style.background = "rgba(var(--card-bg-rgb), 0.05)";
+    createItem.style.display = "flex";
+    createItem.style.flexDirection = "column";
+    createItem.style.alignItems = "center";
+    createItem.style.justifyContent = "center";
+    createItem.style.gap = "12px";
+    createItem.innerHTML = `
+      <i data-lucide="plus-circle" width="36" height="36" style="color: var(--primary-color);"></i>
+      <span style="font-weight: 700; color: var(--text-color); font-size: 16px;">${this.getTranslation("create_custom_template") || "إنشاء قالب خاص"}</span>
+    `;
+    createItem.addEventListener("click", () => {
+      this.toggleModal("templates", false);
+      this.toggleModal("customize", true);
+    });
+    grid.appendChild(createItem);
+
+    allTemplates.forEach((template) => {
+      const item = document.createElement("button");
+      item.className = "template-item";
+      
+      const templateName = this.getTranslation(template.id) !== template.id 
+          ? this.getTranslation(template.id) 
+          : (template.name || template.id);
+
+      item.setAttribute("aria-label", `${this.getTranslation("aria_template")} ${templateName}`);
+
+      const isVideo = template.type === "video";
+      
+      const previewContent = isVideo
+        ? `<video src="${template.url}" muted loop playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>`
+        : `<img src="${template.url}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;" alt="${templateName}" />`;
+
+      const badgeText = isVideo ? this.getTranslation("video_badge") : this.getTranslation("image_badge");
+      const themeText = template.theme === "dark" ? this.getTranslation("theme_dark") : this.getTranslation("theme_light");
+
+      item.innerHTML = `
+                <div class="template-preview" style="background: ${template.color};">
+                    ${previewContent}
+                    <div class="template-overlay">
+                        <span class="template-name-minimal">${templateName}</span>
+                        <div class="template-badges-row">
+                            <span class="template-badge-minimal">${badgeText}</span>
+                            <span class="template-badge-minimal">${themeText}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+      // Hover to play/pause video logic
+      if (isVideo) {
+        const video = item.querySelector("video");
+        item.addEventListener("mouseenter", () => {
+          video.play().catch((e) => console.warn("Video play error:", e));
+        });
+        item.addEventListener("mouseleave", () => {
+          video.pause();
+        });
+      }
+
+      item.addEventListener("click", () => onSelectTemplate(template));
+      grid.appendChild(item);
+    });
+
+    if (typeof lucide !== "undefined") {
+      lucide.createIcons();
+    }
+  }
+
+  renderPagesTabs(pages, activePageId, actions) {
+    const tabsContainer = this.elements.containers.pagesTabs;
+    if (!tabsContainer) return;
+
+    tabsContainer.innerHTML = "";
+
+    pages.forEach((page) => {
+      const tabEl = document.createElement("button");
+      tabEl.className = "page-tab";
+      tabEl.dataset.id = page.id;
+      if (page.id === activePageId) {
+        tabEl.classList.add("active");
+      }
+
+      const nameEl = document.createElement("span");
+      nameEl.className = "page-tab-name";
+      nameEl.textContent = page.title || this.getTranslation("new_page");
+      nameEl.dir = "auto";
+      
+      nameEl.addEventListener("dblclick", (e) => {
+        e.stopPropagation();
+        nameEl.contentEditable = true;
+        nameEl.focus();
+        document.execCommand("selectAll", false, null);
+      });
+      nameEl.addEventListener("blur", (e) => {
+        nameEl.contentEditable = false;
+        const newTitle = e.target.textContent.trim() || this.getTranslation("new_page");
+        if (newTitle !== page.title) {
+          actions.onRenamePage(page.id, newTitle);
+        }
+      });
+      nameEl.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          nameEl.blur();
+        }
+      });
+
+      tabEl.appendChild(nameEl);
+
+      // Delete button for non-home pages or if there's more than one page
+      if (pages.length > 1) {
+        const delBtn = document.createElement("div");
+        delBtn.className = "delete-page-btn";
+        delBtn.innerHTML = '<i data-lucide="x" width="14" height="14"></i>';
+        delBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (confirm(this.getTranslation("delete_page_confirm"))) {
+            actions.onDeletePage(page.id);
+          }
+        });
+        tabEl.appendChild(delBtn);
+      }
+
+      tabEl.addEventListener("click", () => {
+        if (page.id !== activePageId) {
+          actions.onSelectPage(page.id);
+        }
+      });
+
+      tabsContainer.appendChild(tabEl);
+    });
+
+    if (typeof lucide !== "undefined") {
+      lucide.createIcons();
+    }
+  }
+
+  renderBoard(groups, actions) {
+    const { board } = this.elements;
+    board.innerHTML = "";
+
+    const colCount = Math.max(
+      1,
+      window.App?.stateManager?.getState()?.settings?.columnsCount || 6,
+    );
+    const columns = Array.from({ length: colCount }, (_, i) => {
+      const colEl = document.createElement("div");
+      colEl.className = "board-column";
+      colEl.dataset.colIndex = i;
+      board.appendChild(colEl);
+      return colEl;
+    });
+
+    groups.forEach((group) => {
+      const groupEl = this._createGroupElement(group, actions);
+      const targetCol =
+        columns[
+          group.column >= 0 && group.column < colCount ? group.column : 0
+        ];
+      targetCol.appendChild(groupEl);
+    });
+
+    // Dynamic add-group placeholder on hover (JS-driven)
+    columns.forEach((colEl, i) => {
+      let placeholder = null;
+
+      const createPlaceholder = () => {
+        // Don't show if dragging is active or already exists
+        if (placeholder || document.body.classList.contains("dragging-active")) return;
+        
+        placeholder = document.createElement("button");
+        placeholder.className = "add-group-placeholder";
+        placeholder.innerHTML = `
+          <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <i data-lucide="folder-plus" width="18" height="18" stroke-width="2"></i>
+            <span data-i18n="create_group">${this.getTranslation("create_group")}</span>
+          </div>
+        `;
+        placeholder.addEventListener("click", () => actions.onAddGroup(i));
+        colEl.appendChild(placeholder);
+        if (typeof lucide !== "undefined") lucide.createIcons();
+        requestAnimationFrame(() => placeholder?.classList.add("visible"));
+      };
+
+      const removePlaceholder = () => {
+        if (placeholder) {
+          placeholder.remove();
+          placeholder = null;
+        }
+      };
+
+      // Use a single delegated listener for cleaner logic
+      colEl.addEventListener("mousemove", (e) => {
+        // If we are over a group-card, remove placeholder
+        if (e.target.closest(".group-card")) {
+          removePlaceholder();
+        } else if (!placeholder) {
+          // If we are over the column empty space, create it
+          createPlaceholder();
+        }
+      });
+
+      colEl.addEventListener("mouseleave", () => {
+        removePlaceholder();
+      });
+    });
+
+    if (typeof lucide !== "undefined") {
+      lucide.createIcons();
+    }
+  }
+
+  _createGroupElement(group, actions) {
+    const groupEl = document.createElement("div");
+    groupEl.className = "group-card";
+    groupEl.dataset.id = group.id;
+
+    const headerEl = document.createElement("div");
+    headerEl.className = "group-header";
+
+    const titleEl = document.createElement("div");
+    titleEl.className = "group-title";
+    titleEl.textContent = group.title;
+    titleEl.dir = "auto";
+
+    titleEl.addEventListener("dblclick", (e) => {
+      e.stopPropagation();
+      titleEl.contentEditable = true;
+      titleEl.focus();
+      document.execCommand("selectAll", false, null);
+    });
+    titleEl.addEventListener("blur", (e) => {
+      titleEl.contentEditable = false;
+      const defaultTitle = this.getTranslation("new_group_placeholder") || "New Group";
+      const newTitle = e.target.textContent.trim() || defaultTitle;
+      actions.onRenameGroup(group.id, newTitle);
+    });
+
+    // Appending Title and Settings
+    headerEl.appendChild(titleEl);
+    headerEl.appendChild(this._createGroupSettingsDropdown(group, actions));
+
+    const listEl = document.createElement("div");
+    listEl.className = "site-list";
+    listEl.dataset.groupId = group.id;
+
+    group.sites.forEach((site) => {
+      listEl.appendChild(this._createSiteElement(site, group.id, actions));
+    });
+
+    const addSiteBtn = document.createElement("button");
+    addSiteBtn.className = "add-site-btn";
+    addSiteBtn.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                <i data-lucide="square-plus" width="14" height="14" stroke-width="2"></i>
+                <span data-i18n="add_site">${this.getTranslation("add_site")}</span>
+            </div>
+        `;
+    addSiteBtn.addEventListener("click", () =>
+      actions.onOpenAddSiteModal(group.id),
+    );
+
+    groupEl.appendChild(headerEl);
+    groupEl.appendChild(listEl);
+    groupEl.appendChild(addSiteBtn);
+
+    return groupEl;
+  }
+
+  _createGroupSettingsDropdown(group, actions) {
+    const wrap = document.createElement("div");
+    wrap.className = "group-settings-wrap";
+
+    const triggerBtn = document.createElement("button");
+    triggerBtn.className = "group-settings-btn";
+    triggerBtn.setAttribute("aria-label", this.getTranslation("group_options"));
+    triggerBtn.innerHTML =
+      '<i data-lucide="ellipsis-vertical" width="16" height="16" stroke-width="1.5" aria-hidden="true"></i>';
+
+    const dropdown = document.createElement("div");
+    dropdown.className = "group-dropdown";
+
+    const renameBtn = document.createElement("button");
+    renameBtn.innerHTML =
+      `<i data-lucide="pencil" width="14" height="14" stroke-width="1.5"></i> ${this.getTranslation("rename_group_btn")}`;
+    renameBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const newName = prompt(this.getTranslation("rename_group"), group.title);
+      if (newName && newName.trim()) {
+        actions.onRenameGroup(group.id, newName.trim());
+      }
+      dropdown.classList.remove("show");
+    });
+
+    const delBtn = document.createElement("button");
+    delBtn.className = "delete-dropdown-btn";
+    delBtn.innerHTML =
+      `<i data-lucide="trash" width="14" height="14" stroke-width="1.5"></i> ${this.getTranslation("delete_group_btn")}`;
+    delBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (confirm(this.getTranslation("delete_group_confirm"))) {
+        actions.onDeleteGroup(group.id);
+      }
+    });
+
+    dropdown.appendChild(renameBtn);
+    dropdown.appendChild(delBtn);
+    wrap.appendChild(triggerBtn);
+    wrap.appendChild(dropdown);
+
+    triggerBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      document.querySelectorAll(".group-dropdown.show").forEach((d) => {
+        if (d !== dropdown) d.classList.remove("show");
+      });
+      dropdown.classList.toggle("show");
+    });
+
+    return wrap;
+  }
+
+  _createSiteElement(site, groupId, actions) {
+    const siteEl = document.createElement("a");
+    siteEl.className = "site-item";
+    const openNewTab = window.App?.stateManager?.getState()?.settings?.openInNewTab ?? false;
+    siteEl.href = site.url;
+    siteEl.target = openNewTab ? "_blank" : "_self";
+    siteEl.rel = "noopener noreferrer";
+    siteEl.setAttribute("aria-label", `${this.getTranslation("go_to_site")} ${site.name}`);
+    siteEl.dataset.id = site.id;
+    siteEl.draggable = false;
+
+    const iconEl = document.createElement("img");
+    iconEl.className = "site-favicon";
+    iconEl.src = this.getFavicon(site.url);
+    iconEl.alt = `${site.name} icon`;
+    iconEl.width = 16;
+    iconEl.height = 16;
+    iconEl.loading = "lazy";
+
+    const nameEl = document.createElement("div");
+    nameEl.className = "site-name";
+    nameEl.textContent = site.name;
+    nameEl.dir = "auto";
+
+    const contentWrap = document.createElement("div");
+    contentWrap.className = "site-content";
+    contentWrap.appendChild(nameEl);
+
+    if (site.desc) {
+      const descEl = document.createElement("div");
+      descEl.className = "site-desc";
+      descEl.textContent = site.desc;
+      descEl.dir = "auto";
+      contentWrap.appendChild(descEl);
+    }
+
+    const delSiteBtn = document.createElement("button");
+    delSiteBtn.className = "delete-site-btn";
+    delSiteBtn.setAttribute("aria-label", `${this.getTranslation("delete_site_aria")} ${site.name}`);
+    delSiteBtn.innerHTML =
+      '<i data-lucide="x" width="14" height="14" stroke-width="2" aria-hidden="true"></i>';
+    delSiteBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      actions.onDeleteSite(groupId, site.id);
+    });
+
+    siteEl.appendChild(iconEl);
+    siteEl.appendChild(contentWrap);
+    siteEl.appendChild(delSiteBtn);
+
+    return siteEl;
+  }
+
+  closeDropdowns() {
+    document
+      .querySelectorAll(".group-dropdown.show")
+      .forEach((d) => d.classList.remove("show"));
+  }
+
+  toggleModal(modalKey, isVisible) {
+    const modal = this.elements.modals[modalKey];
+    if (modal) {
+      modal.style.display = isVisible ? "flex" : "none";
+    }
+  }
+}

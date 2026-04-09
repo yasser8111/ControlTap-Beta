@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1400, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="RedEye - صفحة بداية مخصصة وبسيطة لإدارة روابطك المفضلة بأسلوب عصري."
+    />
+    <title data-i18n="page_title">RedEye | صفحة بداية مخصصة</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap&font-display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" type="image/png" href="icon128.png" />
+    <link rel="apple-touch-icon" href="icon128.png" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="light-theme">
+    <!-- خلفية الفيديو -->
+    <video
+      id="bgVideo"
+      autoplay
+      loop
+      muted
+      playsinline
+      aria-hidden="true"
+    ></video>
+
+    <header class="app-header">
+      <div class="header-content">
+        <!-- Left Section: Pages -->
+        <div class="header-left">
+          <div
+            id="pagesTabs"
+            class="pages-tabs"
+            aria-label="Pages Navigation"
+            dir="auto"
+          ></div>
+          <button
+            id="addPageBtn"
+            class="header-icon-btn add-page-btn"
+            aria-label="Add Page"
+            title="إضافة صفحة"
+          >
+            <i data-lucide="plus" width="18" height="18"></i>
+          </button>
+        </div>
+
+        <!-- Right Section: Controls & Socials -->
+        <div class="header-right">
+          <nav
+            class="control-group"
+            aria-label="Controls"
+            data-i18n-aria="aria_controls"
+          >
+            <button
+              id="templatesBtn"
+              class="header-btn"
+              aria-label="Open templates list"
+              data-i18n-aria="aria_templates"
+            >
+              <i
+                data-lucide="book-marked"
+                width="16"
+                height="16"
+                aria-hidden="true"
+              ></i>
+              <span data-i18n="templates">القاولب</span>
+            </button>
+            <button
+              id="customizeBtn"
+              class="header-btn"
+              aria-label="Customize appearance and colors"
+              data-i18n-aria="aria_customize"
+            >
+              <i
+                data-lucide="palette"
+                width="16"
+                height="16"
+                aria-hidden="true"
+              ></i>
+              <span data-i18n="customize">تخصيص</span>
+            </button>
+            <button
+              id="settingsBtn"
+              class="header-btn"
+              aria-label="General settings"
+              data-i18n-aria="aria_general_settings"
+            >
+              <i
+                data-lucide="settings"
+                width="18"
+                height="18"
+                aria-hidden="true"
+              ></i>
+              <span data-i18n="settings">الإعدادات</span>
+            </button>
+            <button
+              id="aboutBtn"
+              class="header-btn"
+              aria-label="About & Contact"
+            >
+              <i
+                data-lucide="info"
+                width="18"
+                height="18"
+                aria-hidden="true"
+              ></i>
+              <span data-i18n="about">حول</span>
+            </button>
+          </nav>
+        </div>
+      </div>
+    </header>
+
+    <!-- تم إعادة اللوحة لتكون بنظام الشبك (Grid/Columns) المنظم -->
+    <div id="board" class="board"></div>
+
+    <div id="siteModal" class="modal-overlay">
+      <div class="modal">
+        <h2 id="modalTitle" data-i18n="add_site_title">إضافة موقع جديد</h2>
+        <input
+          type="text"
+          id="siteNameInput"
+          placeholder="اسم الموقع (مثل: Google)"
+          data-i18n-placeholder="site_name_placeholder"
+          dir="auto"
+        />
+        <input
+          type="url"
+          id="siteUrlInput"
+          placeholder="الرابط (مثل: https://google.com)"
+          data-i18n-placeholder="site_url_placeholder"
+          dir="auto"
+        />
+        <input
+          type="text"
+          id="siteDescInput"
+          placeholder="وصف الموقع (اختياري)"
+          data-i18n-placeholder="site_desc_placeholder"
+          dir="auto"
+        />
+        <input type="hidden" id="currentGroupId" />
+        <div class="modal-actions">
+          <button id="cancelSiteBtn" class="btn btn-cancel" data-i18n="cancel">
+            إلغاء
+          </button>
+          <button id="saveSiteBtn" class="btn btn-save" data-i18n="save_site">
+            حفظ الموقع
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- نافذة التخصيص الاحترافية (UI/UX Refined) -->
+    <div id="customizeModal" class="modal-overlay">
+      <div
+        class="modal settings-modal-premium"
+        style="max-width: 950px; width: 90vw"
+      >
+        <div class="modal-header">
+          <h2 data-i18n="customize_title">تخصيص الواجهة</h2>
+          <button id="closeCustomizeX" class="header-btn" style="padding: 10px; justify-content: center; height: 42px; width: 42px;">
+            <i data-lucide="x" width="20" height="20"></i>
+          </button>
+        </div>
+
+        <div class="customize-body-grid">
+          <!-- الجانب الأيمن: الخيارات (RTL) -->
+          <div class="customize-options-side">
+            <!-- المظهر الأساسي (اللون والوضع) -->
+            <div class="option-group-premium">
+              <h3 class="group-label" data-i18n="appearance_colors">
+                المظهر والألوان
+              </h3>
+              <div style="display: flex; flex-direction: column; gap: 16px">
+                <!-- الوضع الفاتح -->
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <label for="themeModeInput" style="margin: 0; cursor: pointer; font-weight: 600; color: var(--text-color); font-size: 14px;" data-i18n="light_mode">الوضع الفاتح</label>
+                  <label class="switch">
+                    <input type="checkbox" id="themeModeInput" />
+                    <span class="slider round"></span>
+                  </label>
+                </div>
+                <!-- خط فاصل -->
+                <div style="height: 1px; background: var(--border-color); opacity: 0.5;"></div>
+                <!-- اللون الأساسي -->
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <span style="font-weight: 600; color: var(--text-color); font-size: 14px;" data-i18n="primary_color">اللون الأساسي</span>
+                  <div class="color-input-wrapper" style="gap: 12px">
+                    <input type="color" id="primaryColorInput" value="#3b82f6" />
+                    <input type="text" id="colorHexLabel" class="hex-input-premium" value="#3B82F6" maxlength="7" spellcheck="false" dir="ltr" style="text-align: left; width: 75px" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- الشفافية -->
+            <div class="option-group-premium range-container-premium">
+              <div class="range-info" style="margin-bottom: 16px; align-items: center">
+                <span id="opacityValueDisplay" class="range-value-large" style="margin: 0">25%</span>
+                <span class="range-label-sub" style="font-weight: 600; color: var(--text-color); opacity: 0.8; font-size: 14px;" data-i18n="card_opacity">شفافية البطاقات</span>
+              </div>
+              <input type="range" id="cardOpacityInput" min="0" max="0.9" step="0.05" value="0.25" class="slider-premium" />
+            </div>
+
+            <!-- مجموعة: الخلفية (بدون إطار إضافي) -->
+            <div class="upload-container-premium" style="margin-top: 8px;">
+              <input type="file" id="bgFileInput" accept="image/*,video/*" hidden />
+              <label for="bgFileInput" id="fileUploadLabel" class="upload-area-premium" style="cursor: pointer; width: 100%; display: flex; box-sizing: border-box; align-items: center; gap: 12px;">
+                <div class="upload-icon-box">
+                  <i data-lucide="image-plus" width="24" height="24" style="color: var(--primary-color);"></i>
+                </div>
+                <div class="upload-text-box">
+                  <strong><span style="color: var(--primary-color); font-size: 14px;" data-i18n="upload_bg">ارفع صورة أو فيديو</span></strong>
+                  <div class="upload-sub-text" style="font-size: 12px; margin-top: 4px; opacity: 0.7;" data-i18n="upload_sub">سيتم حفظ الملف محلياً</div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- الجانب الأيسر: المعاينة الحية والأزرار السفلية -->
+          <div style="display: flex; flex-direction: column; gap: var(--space-xl); height: 100%;">
+            <div class="customize-preview-side" style="flex: 1;">
+              <div id="currentUserMediaPreview" class="live-preview-content">
+                <div class="preview-loading-placeholder" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+                  <div class="skeleton-box" style="width: 100%; height: 100%; border-radius: 0;"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- أزرار التحكم السفلية تحت الصورة -->
+            <div class="customize-footer-premium" style="margin-top: auto; display: flex; gap: 8px;">
+              <button id="cancelCustomizeBtn" class="btn btn-cancel" style="flex: 1; justify-content: center;">
+                <span data-i18n="cancel">إلغاء</span>
+              </button>
+              <button id="saveAsTemplateBtn" class="btn btn-cancel" style="flex: 1; justify-content: center;" data-i18n="save_as_template">
+                حفظ كقالب
+              </button>
+              <button id="saveCustomizeBtn" class="btn-primary-premium" style="flex: 1; justify-content: center;" data-i18n="save_changes">
+                حفظ التغييرات
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- نافذة القوالب -->
+    <div id="templatesModal" class="modal-overlay">
+      <div
+        class="modal templates-modal"
+        style="
+          max-width: 1200px;
+          width: 90vw;
+          padding: 30px;
+          display: flex;
+          flex-direction: column;
+          max-height: 90vh;
+        "
+      >
+        <div class="modal-header">
+          <h2
+            style="border: none; margin: 0; font-size: 24px"
+            data-i18n="choose_template"
+          >
+            اختر مظهرك المفضل
+          </h2>
+          <button id="closeTemplatesX" class="close-x-btn">
+            <i data-lucide="x" width="20" height="20"></i>
+          </button>
+        </div>
+
+        <div
+          class="templates-grid"
+          id="templatesGrid"
+          style="flex: 1; overflow-y: auto; margin-top: 20px"
+        >
+          <!-- سيتم تحميل القوالب المجردة ديناميكياً من الجافاسكريبت هنا -->
+        </div>
+      </div>
+    </div>
+
+    <!-- نافذة الإعدادات العامة (الجديدة) -->
+    <div id="settingsModal" class="modal-overlay">
+      <div class="modal">
+        <h2 data-i18n="general_settings">الإعدادات العامة</h2>
+        <p
+          style="
+            margin-bottom: 20px;
+            color: var(--text-color);
+            font-size: 14px;
+            opacity: 0.8;
+          "
+          data-i18n="system_settings"
+        >
+          إعدادات النظام والبيانات:
+        </p>
+        <div class="setting-group">
+          <label data-i18n="language">اللغة</label>
+          <select id="languageInput" class="theme-select">
+            <option value="ar">العربية</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+        <div class="setting-group">
+          <label data-i18n="display_behavior_settings"
+            >خيارات العرض والروابط</label
+          >
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              margin-bottom: 12px;
+            "
+          >
+            <span
+              style="font-size: 14px; color: var(--text-color); opacity: 0.9"
+              data-i18n="simple_mode"
+              >وضع الواجهة البسيط (إخفاء النصوص)</span
+            >
+            <label class="switch">
+              <input type="checkbox" id="simpleModeInput" />
+              <span class="slider round"></span>
+            </label>
+          </div>
+          <div
+            style="
+              height: 1px;
+              background: var(--border-color);
+              opacity: 0.4;
+              margin: 12px 0;
+            "
+          ></div>
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+            "
+          >
+            <span
+              style="font-size: 14px; color: var(--text-color); opacity: 0.9"
+              data-i18n="open_new_tab"
+              >فتح المواقع في علامة تبويب جديدة</span
+            >
+            <label class="switch">
+              <input type="checkbox" id="openInNewTabInput" />
+              <span class="slider round"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <label data-i18n="board_layout_settings">تخطيط لوحة المعلومات</label>
+          <div style="margin-bottom: 16px">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 8px;
+              "
+            >
+              <span
+                style="font-size: 14px; color: var(--text-color); opacity: 0.9"
+                data-i18n="column_count"
+                >عدد الأعمدة</span
+              >
+              <span
+                id="colCountValue"
+                style="font-weight: 700; color: var(--primary-color)"
+                >6</span
+              >
+            </div>
+            <input
+              type="range"
+              id="colCountInput"
+              min="2"
+              max="12"
+              step="1"
+              value="6"
+              class="slider-premium"
+            />
+          </div>
+          <div
+            style="
+              height: 1px;
+              background: var(--border-color);
+              opacity: 0.4;
+              margin: 16px 0;
+            "
+          ></div>
+          <div>
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 8px;
+              "
+            >
+              <span
+                style="font-size: 14px; color: var(--text-color); opacity: 0.9"
+                data-i18n="card_size"
+                >حجم البطاقات</span
+              >
+              <span
+                id="cardSizeValue"
+                style="font-weight: 700; color: var(--primary-color)"
+                >100%</span
+              >
+            </div>
+            <input
+              type="range"
+              id="cardSizeInput"
+              min="60"
+              max="150"
+              step="5"
+              value="100"
+              class="slider-premium"
+            />
+          </div>
+
+          <div
+            style="
+              height: 1px;
+              background: var(--border-color);
+              opacity: 0.4;
+              margin: 16px 0;
+            "
+          ></div>
+
+          <!-- قسم إدارة البيانات المطور -->
+          <div
+            style="
+              margin-top: 24px;
+              padding-top: 16px;
+              border-top: 1px solid var(--border-color);
+            "
+          >
+            <p
+              style="
+                font-size: 13px;
+                font-weight: 700;
+                margin-bottom: 16px;
+                color: var(--text-color);
+                opacity: 0.9;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+              "
+              data-i18n="data_management"
+            >
+              إدارة البيانات
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 16px">
+              <!-- زر الاستيراد (كبير ومتقطع كمنطقة رفع) -->
+              <button
+                id="importDataBtn"
+                style="
+                  width: 100%;
+                  border: 2px dashed var(--primary-color);
+                  padding: 24px 16px;
+                  background: transparent;
+                  border-radius: var(--radius-lg);
+                  display: flex;
+                  flex-direction: column;
+                  align-items: center;
+                  gap: 12px;
+                  cursor: pointer;
+                  color: var(--text-color);
+                  transition: all 0.3s ease;
+                "
+              >
+                <i
+                  data-lucide="upload-cloud"
+                  width="28"
+                  height="28"
+                  style="color: var(--primary-color)"
+                ></i>
+                <div
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 4px;
+                  "
+                >
+                  <span
+                    style="font-weight: 700; font-size: 15px"
+                    data-i18n="import_data"
+                    >استيراد من ملف</span
+                  >
+                  <span
+                    style="
+                      font-size: 12px;
+                      opacity: 0.6;
+                      color: var(--text-muted);
+                    "
+                    >JSON format backup files</span
+                  >
+                </div>
+              </button>
+              <input
+                type="file"
+                id="importFileInput"
+                accept=".json"
+                style="display: none"
+              />
+
+              <!-- زر التصدير (طبيعي) -->
+              <button
+                id="exportDataBtn"
+                class="btn btn-cancel"
+                style="
+                  width: 100%;
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  padding: 12px;
+                  font-weight: 600;
+                "
+              >
+                <i data-lucide="download" width="16" height="16"></i>
+                <span data-i18n="export_data">تصدير (نسخة احتياطية)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div
+          class="modal-actions"
+          style="margin-top: 24px; gap: 8px; flex-wrap: wrap"
+        >
+          <button
+            id="cancelSettingsBtn"
+            class="btn btn-cancel"
+            data-i18n="cancel"
+          >
+            إلغاء
+          </button>
+          <button
+            id="resetSettingsBtn"
+            class="btn btn-cancel"
+            style="color: #ff4757; border-color: rgba(255, 71, 87, 0.2)"
+            data-i18n="reset_settings"
+          >
+            إعادة الضبط
+          </button>
+          <button
+            id="saveSettingsBtn"
+            class="btn btn-save"
+            data-i18n="save_settings"
+          >
+            حفظ الإعدادات
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- نافذة حول (About & Contact) -->
+    <div id="aboutModal" class="modal-overlay">
+      <div
+        class="modal"
+        style="max-width: 400px; text-align: center; padding: 32px"
+      >
+        <h2
+          style="margin-bottom: 24px; font-size: 20px"
+          data-i18n="about_title"
+        >
+          حول المشروع
+        </h2>
+        <p
+          style="
+            color: var(--text-color);
+            opacity: 0.8;
+            line-height: 1.6;
+            margin-bottom: 24px;
+            font-size: 14px;
+          "
+          data-i18n="about_desc"
+        >
+          RedEye هي واجهة بداية مخصصة تم تصميمها لتكون سريعة، بسيطة، واحترافية.
+          يمكنك تنظيم روابطك بسهولة وتخصيص المظهر بالكامل.
+        </p>
+
+        <div
+          style="
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-bottom: 32px;
+          "
+        >
+          <a
+            href="https://www.instagram.com/ysrnhdi811/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="social-btn"
+            aria-label="Instagram"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+            </svg>
+          </a>
+          <a
+            href="https://x.com/D3Yasse71346"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="social-btn"
+            aria-label="Twitter"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path
+                d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"
+              ></path>
+            </svg>
+          </a>
+          <a
+            href="https://github.com/yasser8111"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="social-btn"
+            aria-label="GitHub"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path
+                d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"
+              ></path>
+            </svg>
+          </a>
+        </div>
+
+        <button
+          id="closeAboutBtn"
+          class="btn btn-save"
+          style="min-width: 120px; margin: 0 auto; display: inline-block"
+          data-i18n="close"
+        >
+          إغلاق
+        </button>
+      </div>
+    </div>
+
+    <script src="js/lib/Sortable.min.js"></script>
+    <script src="js/lib/lucide.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/MediaStorage.js"></script>
+    <script src="js/StateManager.js"></script>
+    <script src="js/UIManager.js"></script>
+    <script src="js/AppController.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>

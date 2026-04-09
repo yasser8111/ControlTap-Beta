@@ -1,0 +1,82 @@
+/* ==========================================================================
+   1. GLOBAL VARIABLES & THEMES
+   ========================================================================== */
+:root {
+  /* UI Colors */
+  --bg-color: #f8fafc;
+  --primary-color: #3b82f6;
+  --primary-hover: #2563eb;
+  --danger-color: #ef4444;
+
+  /* Glassmorphism Defaults */
+  --card-opacity: 0.25;
+  --blur-amount: 24px;
+  --modal-blur: 32px;
+
+  /* Surface Styling */
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.15);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 20px;
+  --radius-full: 50px;
+
+  /* Animations */
+  --transition-fast: all 0.2s ease;
+  --transition-base: all 0.3s ease;
+  --transition-premium: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+
+  /* Spacing System */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+  --space-3xl: 40px;
+
+  /* Typography */
+  --font-xs: 10px;
+  --font-sm: 11px;
+  --font-md: 13px;
+  --font-lg: 14px;
+  --font-xl: 16px;
+  --font-2xl: 18px;
+  --font-3xl: 22px;
+  --font-giant: 28px;
+
+  /* Legacy/Compatibility */
+  --radius: 12px;
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  --transition: all 0.2s ease;
+}
+
+/* Light Theme Variables */
+body.light-theme {
+  --text-color: #0f172a; /* Deeper dark text */
+  --text-muted: #334155; /* Darker muted text */
+  --card-bg-rgb: 255, 255, 255;
+  --group-title-color: #000000; /* Pure black for max contrast */
+  --border-color: rgba(0, 0, 0, 0.1); /* Darker border for visibility */
+  --modal-bg: rgba(255, 255, 255, 0.98);
+  --site-hover-bg: rgba(255, 255, 255, 0.9);
+  --site-bg: rgba(255, 255, 255, 0.5);
+  --input-bg: rgba(255, 255, 255, 0.9);
+  --input-text: #000000;
+}
+
+/* Dark Theme Variables */
+body.dark-theme {
+  --text-color: #f8fafc; /* Pure white/bright text */
+  --text-muted: #cbd5e1; /* Brighter muted text */
+  --card-bg-rgb: 0, 0, 0;
+  --group-title-color: #ffffff;
+  --border-color: rgba(255, 255, 255, 0.25); /* Stronger border contrast */
+  --modal-bg: rgba(15, 23, 42, 0.98);
+  --site-hover-bg: rgba(255, 255, 255, 0.25);
+  --site-bg: rgba(255, 255, 255, 0.1); /* More visible items */
+  --input-bg: rgba(0, 0, 0, 0.8);
+  --input-text: #ffffff;
+}

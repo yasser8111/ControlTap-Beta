@@ -1,0 +1,76 @@
+const CONFIG = {
+  DB_NAME: "NewTabMediaDB",
+  DB_VERSION: 1,
+  STORE_NAME: "media",
+  STORAGE_KEY: "newtabStateV2",
+  TOTAL_COLUMNS: 6,
+};
+
+const UI_TEMPLATES = [
+  {
+    id: "tem-1111",
+    type: "video",
+    url: "backgrounds/1111.mp4",
+    color: "#FF2E32",
+    opacity: 0.1,
+    theme: "dark",
+  },
+  {
+    id: "tem-1118",
+    type: "video",
+    url: "backgrounds/1118.mp4",
+    color: "#342F37",
+    opacity: 0.15,
+    theme: "dark",
+  },
+  {
+    id: "tem-1112",
+    type: "video",
+    url: "backgrounds/1112.mp4",
+    color: "#F58E9F",
+    opacity: 0.15,
+    theme: "light",
+  },
+  {
+    id: "tem-1113",
+    type: "video",
+    url: "backgrounds/1113.mp4",
+    color: "#D48A68",
+    opacity: 0.1,
+    theme: "dark",
+  },
+  {
+    id: "tem-1114",
+    type: "video",
+    url: "backgrounds/1114.mp4",
+    color: "#7AA439",
+    opacity: 0.15,
+    theme: "dark",
+  },
+  {
+    id: "tem-1115",
+    type: "image",
+    url: "backgrounds/1115.jpg",
+    color: "#2C5F8E",
+    opacity: 0.3,
+    theme: "dark",
+  },
+  {
+    id: "tem-1116",
+    type: "image",
+    url: "backgrounds/1116.jpg",
+    color: "#E63946",
+    opacity: 0.2,
+    theme: "dark",
+  },
+  {
+    id: "tem-1117",
+    type: "video",
+    url: "backgrounds/1117.mp4",
+    color: "#FB8500",
+    opacity: 0.2,
+    theme: "dark",
+  },
+];
+
+const BACKGROUND_PRESETS = [];

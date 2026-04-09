@@ -1,0 +1,227 @@
+/* ==========================================================================
+   5. MODAL OVERLAYS & DIALOGS
+   ========================================================================== */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  display: none;
+  justify-content: center;
+  align-items: flex-start;
+  padding: var(--space-2xl) var(--space-lg);
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.modal {
+  background: rgba(var(--card-bg-rgb), var(--card-opacity));
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-color);
+  padding: var(--space-2xl) var(--space-3xl);
+  border-radius: var(--radius-xl);
+  width: 100%;
+  max-width: 500px;
+  margin: auto;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  color: var(--group-title-color);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+  transition: transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1), opacity 0.3s ease;
+}
+
+.modal h2 {
+  margin-bottom: var(--space-2xl);
+  font-size: var(--font-2xl);
+  font-weight: 700;
+  color: var(--group-title-color);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: var(--space-lg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal h2::before {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 18px;
+  background: var(--primary-color);
+  border-radius: 4px;
+}
+
+/* Modal Form Inputs */
+.modal input[type="text"],
+.modal input[type="url"],
+.theme-select {
+  width: 100%;
+  padding: 13px var(--space-lg);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  outline: none;
+  font-size: var(--font-lg);
+  transition: var(--transition-base);
+  background: rgba(var(--card-bg-rgb), calc(var(--card-opacity) * 1.5));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--input-text);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.modal input[type="text"]:focus,
+.modal input[type="url"]:focus,
+.theme-select:focus {
+  border-color: var(--primary-color);
+  background: rgba(var(--card-bg-rgb), calc(var(--card-opacity) * 2));
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+}
+
+.modal input[type="text"]::placeholder,
+.modal input[type="url"]::placeholder {
+  color: var(--text-muted);
+  font-size: var(--font-md);
+}
+
+/* Settings Modal Specifics */
+.settings-modal {
+  max-width: 540px;
+  gap: var(--space-lg); /* Slightly tighter gap for settings */
+}
+
+.setting-group {
+  margin-bottom: 24px;
+  text-align: start;
+  background: rgba(var(--card-bg-rgb), 0.05); /* Subtler background for setting blocks */
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  transition: all 0.2s ease;
+}
+
+.setting-group label {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-color);
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+  margin-top: 4px;
+}
+
+.btn {
+  padding: 11px 22px;
+  border-radius: 10px;
+  font-size: 13px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  font-weight: 600;
+  transition: var(--transition-base);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.btn-cancel {
+  background: rgba(var(--card-bg-rgb), calc(var(--card-opacity) * 1.5));
+  color: var(--group-title-color);
+  border-color: var(--border-color);
+  backdrop-filter: blur(10px);
+}
+
+.btn-save {
+  background: var(--primary-color);
+  color: white;
+}
+
+.bg-presets {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.bg-preset-item {
+  width: 100%;
+  padding: 0;
+  background-color: transparent;
+  height: 70px;
+  border-radius: 8px;
+  background-size: cover;
+  background-position: center;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: var(--transition-base);
+}
+/* Toggle Switch Styling */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+
+.switch input { 
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(var(--card-bg-rgb), 0.2);
+  border: 1px solid var(--border-color);
+  transition: .3s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 2px;
+  background-color: var(--text-color);
+  transition: .3s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+input:checked + .slider {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+input:checked + .slider:before {
+  transform: translateX(19px);
+  background-color: white;
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 24px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}

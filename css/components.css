@@ -1,0 +1,545 @@
+/* ==========================================================================
+   4. UI COMPONENTS
+   ========================================================================== */
+
+/* Pages Navigation inside Header */
+.pages-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto; /* Enable horizontal scrolling */
+  overflow-y: hidden;
+  padding-bottom: 2px; /* Prevent scrollbar from cropping borders */
+  scrollbar-width: none; /* Hide for Firefox */
+  -ms-overflow-style: none; /* Hide for IE/Edge */
+}
+
+.pages-tabs::-webkit-scrollbar {
+  display: none; /* Hide for Chrome/Safari  */
+}
+
+.page-tab {
+  background: rgba(var(--card-bg-rgb), calc(var(--card-opacity) * 0.5));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid transparent;
+  color: var(--text-color);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  outline: none;
+}
+
+.page-tab:hover {
+  background: rgba(var(--card-bg-rgb), var(--card-opacity));
+}
+
+.page-tab.active {
+  background: var(--primary-color);
+  color: #fff;
+  border-color: var(--primary-color);
+}
+
+.page-tab-name {
+  outline: none;
+  min-width: 20px;
+}
+
+.delete-page-btn {
+  background: none;
+  border: none;
+  color: inherit;
+  padding: 2px;
+  margin-left: -4px;
+  margin-right: -4px;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: all 0.2s ease;
+  display: flex;
+  border-radius: 4px;
+}
+
+.delete-page-btn:hover {
+  opacity: 1;
+  background: rgba(255,255,255,0.2);
+}
+
+.add-page-btn {
+  background: transparent;
+  color: var(--text-color);
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px dashed transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  opacity: 0.7;
+}
+
+.add-page-btn:hover {
+  background: rgba(var(--card-bg-rgb), 0.1);
+  border-color: var(--border-color);
+  opacity: 1;
+}
+
+/* Group Card - RESTORED TO ORIGINAL DESIGN */
+.group-card {
+  background: rgba(var(--card-bg-rgb), var(--card-opacity));
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  width: 100%;
+  min-height: 150px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  z-index: 10;
+  transition:
+    box-shadow 0.2s,
+    background-color 0.3s;
+}
+
+.group-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.group-header {
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: grab;
+  background: rgba(var(--card-bg-rgb), calc(var(--card-opacity) * 0.5));
+  border-radius: var(--radius) var(--radius) 0 0;
+  border-bottom: 1px solid var(--border-color);
+  user-select: none;
+}
+
+.group-header:active {
+  cursor: grabbing;
+}
+
+.group-title {
+  font-size: 16px;
+  font-weight: 600;
+  outline: none;
+  flex-grow: 1;
+  text-align: start;
+  padding-inline-end: 8px;
+  color: var(--group-title-color);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.group-settings-wrap {
+  position: relative;
+  margin-inline-start: 8px;
+}
+
+.group-settings-btn {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 16px;
+  opacity: 0;
+  transition:
+    background-color 0.2s,
+    opacity 0.2s;
+  padding: 6px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.group-settings-btn:hover,
+.group-card:hover .group-settings-btn {
+  opacity: 1;
+}
+
+.group-settings-btn:hover {
+  background: rgba(148, 163, 184, 0.2);
+}
+
+.group-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  inset-inline-end: 0;
+  background: rgba(var(--card-bg-rgb), calc(var(--card-opacity) + 0.9));
+  border: 1px solid var(--border-color);
+  backdrop-filter: blur(var(--blur-amount));
+  -webkit-backdrop-filter: blur(var(--blur-amount));
+  border-radius: var(--radius-lg);
+  padding: 8px;
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 1000;
+  min-width: 180px;
+  box-shadow:
+    var(--shadow-lg),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+  transform-origin: top right;
+  animation: dropdownIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Ensure dropdowns on the leftmost side (end of board) flip direction to stay within screen */
+[dir="rtl"] .board-column:last-child .group-dropdown,
+[dir="rtl"] .board-column:nth-last-child(2) .group-dropdown {
+  right: auto;
+  left: 0;
+  transform-origin: top left;
+}
+
+[dir="ltr"] .board-column:last-child .group-dropdown,
+[dir="ltr"] .board-column:nth-last-child(2) .group-dropdown {
+  left: auto;
+  right: 0;
+  transform-origin: top right;
+}
+
+@keyframes dropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.group-dropdown.show {
+  display: flex;
+}
+
+.group-dropdown button {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  padding: 10px 14px;
+  text-align: start;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.group-dropdown button:hover {
+  background: var(--site-hover-bg);
+}
+
+.delete-dropdown-btn {
+  color: var(--danger-color) !important;
+}
+
+/* Site List container */
+.site-list {
+  padding: 12px;
+  flex-grow: 1;
+  min-height: 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Site List Item - RESTORED ORIGINAL ANIMATION & STYLE */
+.site-item {
+  display: flex;
+  align-items: center;
+  background: var(--site-bg);
+  border: 1px solid transparent;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: grab;
+  transition:
+    background-color 0.3s,
+    border-color 0.2s,
+    box-shadow 0.2s,
+    color 0.2s;
+  text-decoration: none;
+  color: var(--text-color);
+}
+
+.site-item:hover {
+  background: var(--site-hover-bg);
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  color: var(--group-title-color);
+}
+
+.site-item:active {
+  cursor: grabbing;
+}
+
+.site-favicon {
+  width: 24px;
+  height: 24px;
+  margin-inline-end: 12px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.site-content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  min-width: 0; /* Important for ellipsis */
+}
+
+.site-name {
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.site-desc {
+  font-size: 11px;
+  opacity: 0.7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+}
+
+.delete-site-btn {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 16px;
+  opacity: 0;
+  transition: all 0.2s ease;
+  z-index: 5;
+}
+
+.site-item:hover .delete-site-btn {
+  opacity: 0.6;
+}
+
+.delete-site-btn:hover {
+  color: var(--danger-color);
+  opacity: 1 !important;
+}
+
+/* Header Buttons - Minimalist */
+.header-btn, .header-icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-color);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.8;
+}
+
+.header-btn:hover, .header-icon-btn:hover {
+  background: rgba(var(--card-bg-rgb), 0.15);
+  opacity: 1;
+}
+
+.header-btn {
+  padding: 6px 12px;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.header-icon-btn {
+  width: 32px;
+  height: 32px;
+}
+
+.header-icon-btn svg,
+.header-icon-btn i {
+  width: 18px;
+  height: 18px;
+}
+
+/* Specific styling for social links within header / about modal */
+.social-btn {
+  background-color: rgba(var(--card-bg-rgb), var(--card-opacity));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  text-decoration: none;
+}
+
+.social-btn:hover {
+  background-color: var(--primary-color);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Add Site Button Interface */
+.add-site-btn {
+  margin: 0 12px 12px 12px;
+  padding: 10px;
+  background: transparent;
+  border: 2px dashed rgba(var(--card-bg-rgb), 0.5);
+  color: var(--text-color);
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.add-site-btn:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  background: var(--site-bg);
+}
+
+.sortable-ghost {
+  opacity: 0.3 !important;
+  background: var(--primary-color) !important;
+  border: 2px dashed var(--primary-color) !important;
+  box-shadow: none !important;
+}
+
+.sortable-ghost * {
+  visibility: hidden;
+}
+
+.sortable-drag {
+  opacity: 0.9 !important;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2) !important;
+  zoom: var(--card-scale, 1) !important;
+}
+
+/* Simple Mode Override */
+body.simple-mode .header-btn span {
+  display: none !important;
+}
+
+body.simple-mode .header-btn {
+  padding: 6px;
+  width: 32px;
+  height: 32px;
+  justify-content: center;
+}
+
+/* Add Group Placeholder — created dynamically by JS on column hover */
+.add-group-placeholder {
+  padding: 14px 16px;
+  background: transparent;
+  border: 2px dashed var(--text-color);
+  color: var(--text-color);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  width: 100%;
+  opacity: 0;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s,
+    color 0.2s,
+    background 0.2s;
+  pointer-events: none;
+}
+
+.add-group-placeholder.visible {
+  opacity: 0.6;
+  pointer-events: auto;
+}
+
+.add-group-placeholder:hover {
+  opacity: 1;
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  background: var(--site-hover-bg);
+}
+
+/* -----------------------------
+   Premium Skeleton Loaders
+----------------------------- */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.skeleton-box {
+  background: rgba(var(--card-bg-rgb), 0.1);
+  background-image: linear-gradient(
+    to right,
+    rgba(var(--card-bg-rgb), 0.05) 0%,
+    rgba(var(--card-bg-rgb), 0.15) 20%,
+    rgba(var(--card-bg-rgb), 0.05) 40%,
+    rgba(var(--card-bg-rgb), 0.05) 100%
+  );
+  background-repeat: no-repeat;
+  background-size: 1000px 100%;
+  animation-duration: 2s;
+  animation-fill-mode: forwards;
+  animation-iteration-count: infinite;
+  animation-name: shimmer;
+  animation-timing-function: linear;
+  border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Ensure empty state feels clean and empty not broken */
+.skeleton-box::before {
+  content: "";
+  display: block;
+  padding-bottom: 100%; /* Makes some elements square by default if no height */
+}
+
+.skeleton-text {
+  height: 14px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+}
+.skeleton-text.short {
+  width: 60%;
+}
+.skeleton-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}

@@ -1,0 +1,131 @@
+/* ==========================================================================
+   3. LAYOUT COMPONENTS
+   ========================================================================== */
+
+/* Background Video */
+#bgVideo {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  z-index: -1;
+  display: none;
+}
+
+/* Modern Unified Header Layout (Stripe/Apple Style) */
+.app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 900;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-bottom: none;
+  box-shadow: none;
+
+  padding: 0 var(--space-xl);
+  height: 64px; /* Slightly taller for premium feel */
+  display: flex;
+  align-items: center;
+  transition:
+    background-color 0.3s,
+    box-shadow 0.2s;
+}
+
+.app-header:hover {
+  /* No lift effect since header is purely transparent now */
+  box-shadow: none;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex: 1; /* Take up available space to push right section */
+  min-width: 0; /* Important for flex children to shrink/truncate/overflow */
+  overflow: hidden; /* Hide anything outside */
+  padding-right: 16px; /* spacing before right controls */
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex-shrink: 0; /* Prevent icons from getting squished */
+}
+
+.control-group,
+.social-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Mobile Responsiveness for Header */
+@media (max-width: 768px) {
+  .app-header {
+    padding: 0 var(--space-sm);
+    height: 50px;
+  }
+  .header-left,
+  .header-right {
+    gap: 4px;
+  }
+  .header-btn span {
+    display: none; /* Hide text on mobile for minimalist stripe-like feel */
+  }
+  .control-group,
+  .social-group {
+    gap: 2px;
+  }
+  .social-group {
+    display: none; /* Can completely hide social icons on very small screens to save space */
+  }
+}
+
+/* Layout Grid & Columns */
+.board {
+  display: flex;
+  justify-content: stretch;
+  gap: var(--space-xl);
+  padding: calc(100px / var(--card-scale, 1))
+    calc(var(--space-3xl) / var(--card-scale, 1))
+    calc(var(--space-3xl) / var(--card-scale, 1))
+    calc(var(--space-3xl) / var(--card-scale, 1));
+  margin: 0 auto;
+  max-width: calc(2000px / var(--card-scale, 1));
+  align-items: flex-start;
+  height: calc(100vh / var(--card-scale, 1));
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-color) transparent;
+}
+
+.board-column {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+  min-height: 100%;
+  border-radius: var(--radius-md);
+  transition: var(--transition-fast);
+}
+
+.board-column.sortable-ghost-bg {
+  background: rgba(var(--card-bg-rgb), 0.05);
+}
