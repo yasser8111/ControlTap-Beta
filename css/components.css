@@ -686,6 +686,71 @@ body.simple-mode .header-btn {
 }
 
 /* -----------------------------
+   Search Bar (Premium Minimalist)
+----------------------------- */
+.search-bar-wrapper {
+  width: 100%;
+  max-width: 650px;
+  margin: 90px auto -60px auto;
+  padding: 0 var(--space-xl);
+  display: flex;
+  justify-content: center;
+  position: relative;
+  z-index: 10;
+  zoom: var(--search-scale, 1);
+}
+
+.search-bar-wrapper.hidden {
+  display: none !important;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: rgba(var(--card-bg-rgb), var(--card-opacity));
+  backdrop-filter: blur(var(--blur-amount));
+  -webkit-backdrop-filter: blur(var(--blur-amount));
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  padding: 12px 20px;
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform 0.2s ease;
+}
+
+.search-box:focus-within {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(var(--primary-color), 0.2), var(--shadow-md);
+}
+
+.search-box i {
+  color: var(--text-color);
+  opacity: 0.6;
+  margin-inline-end: 16px;
+  transition: color 0.2s ease;
+}
+
+.search-box:focus-within i {
+  color: var(--primary-color);
+  opacity: 1;
+}
+
+.search-box input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-color);
+  font-size: 1.2rem;
+  font-weight: 500;
+  outline: none;
+}
+
+.search-box input::placeholder {
+  color: var(--text-color);
+  opacity: 0.4;
+}
+
+/* -----------------------------
    Premium Skeleton Loaders
 ----------------------------- */
 @keyframes shimmer {

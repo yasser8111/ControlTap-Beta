@@ -72,5 +72,3 @@ const UI_TEMPLATES = [
     theme: "dark",
   },
 ];
-
-const BACKGROUND_PRESETS = [];

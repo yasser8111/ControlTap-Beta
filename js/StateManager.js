@@ -27,15 +27,17 @@ class StateManager {
           primaryColor: "#FF2E32",
           cardOpacity: 0.0,
           themeMode: "dark",
+          language: "en",
+          showSearchBar: false,
         },
         pages: [
           {
             id: `page-home`,
-            title: typeof window !== 'undefined' && window.TRANSLATIONS ? (window.TRANSLATIONS[this.language || 'ar']?.home_page || "Home") : "Home",
+            title: "Home",
             groups: [
               {
                 id: `group-1`,
-                title: "المواقع المفضلة",
+                title: "Favorite Sites",
                 column: 0,
                 order: 0,
                 sites: [
@@ -73,9 +75,11 @@ class StateManager {
     }
     this.state.settings.columnsCount ??= 6;
     this.state.settings.cardSize ??= 100;
+    this.state.settings.searchSize ??= 100;
     this.state.settings.simpleMode ??= false;
     this.state.settings.openInNewTab ??= false;
-    this.state.settings.language ??= "ar";
+    this.state.settings.showSearchBar ??= false;
+    this.state.settings.language ??= "en";
 
     const colCount = this.state.settings.columnsCount;
     this.state.pages.forEach(page => {

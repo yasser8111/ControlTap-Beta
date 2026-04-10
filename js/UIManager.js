@@ -26,8 +26,10 @@ class UIManager {
         bgFile: document.getElementById("bgFileInput"),
         colCount: document.getElementById("colCountInput"),
         cardSize: document.getElementById("cardSizeInput"),
+        searchSize: document.getElementById("searchSizeInput"),
         simpleMode: document.getElementById("simpleModeInput"),
         openInNewTab: document.getElementById("openInNewTabInput"),
+        showSearchBar: document.getElementById("showSearchBarInput"),
         language: document.getElementById("languageInput"),
       },
       containers: {
@@ -37,7 +39,9 @@ class UIManager {
         opacityValue: document.getElementById("opacityValueDisplay"),
         colCountValue: document.getElementById("colCountValue"),
         cardSizeValue: document.getElementById("cardSizeValue"),
+        searchSizeValue: document.getElementById("searchSizeValue"),
         pagesTabs: document.getElementById("pagesTabs"),
+        searchBarWrapper: document.getElementById("searchBarWrapper"),
       },
     };
 
@@ -54,13 +58,21 @@ class UIManager {
     root.style.setProperty("--primary-color", settings.primaryColor);
     root.style.setProperty("--card-opacity", settings.cardOpacity);
     const cardScale = Math.max(0.5, (settings.cardSize || 100) / 100);
+    const searchScale = Math.max(0.5, (settings.searchSize || 100) / 100);
     root.style.setProperty("--card-scale", cardScale);
+    root.style.setProperty("--search-scale", searchScale);
     this.elements.board.style.zoom = cardScale;
     document.body.className = `${settings.themeMode}-theme`;
     if (settings.simpleMode) {
       document.body.classList.add("simple-mode");
     } else {
       document.body.classList.remove("simple-mode");
+    }
+
+    if (settings.showSearchBar && this.elements.containers.searchBarWrapper) {
+      this.elements.containers.searchBarWrapper.classList.remove("hidden");
+    } else if (this.elements.containers.searchBarWrapper) {
+      this.elements.containers.searchBarWrapper.classList.add("hidden");
     }
 
     if (this.objectUrlBlob) {
@@ -224,34 +236,6 @@ class UIManager {
     } catch {
       return `https://www.google.com/s2/favicons?domain=google.com&sz=64`;
     }
-  }
-
-  renderPresets(currentSettings, onSelectPreset) {
-    const { bgPresets } = this.elements.containers;
-    if (!bgPresets) return; // Fix: Prevent crash if element is missing
-    bgPresets.innerHTML = "";
-
-    BACKGROUND_PRESETS.forEach((preset) => {
-      const presetEl = document.createElement("button");
-      presetEl.className = "bg-preset-item";
-      presetEl.style.backgroundImage = `url('${preset.url}')`;
-      presetEl.setAttribute(
-        "aria-label",
-        `${this.getTranslation("select_theme")} ${preset.theme === "dark" ? this.getTranslation("theme_dark") : this.getTranslation("theme_light")}`,
-      );
-
-      if (
-        currentSettings.bgType === "preset" &&
-        currentSettings.bgImage === preset.url
-      ) {
-        presetEl.classList.add("active");
-      }
-
-      presetEl.addEventListener("click", () =>
-        onSelectPreset(preset, presetEl),
-      );
-      bgPresets.appendChild(presetEl);
-    });
   }
 
   async renderTemplates(onSelectTemplate, mediaStorage) {

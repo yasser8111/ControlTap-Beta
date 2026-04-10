@@ -204,6 +204,21 @@ class AppController {
       addPageBtn.addEventListener("click", () => this._addPage());
     }
 
+    const searchInput = document.getElementById("searchInput");
+    if (searchInput) {
+      searchInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && e.target.value.trim()) {
+          const currentSettings = this.stateManager.getState().settings;
+          const target = currentSettings.openInNewTab ? "_blank" : "_self";
+          const query = encodeURIComponent(e.target.value.trim());
+          window.open(`https://www.google.com/search?q=${query}`, target);
+          if (!currentSettings.openInNewTab) {
+             e.target.value = "";
+          }
+        }
+      });
+    }
+
     document.getElementById("customizeBtn").addEventListener("click", () => {
       const settings = this.stateManager.getState().settings;
       inputs.themeMode.checked = settings.themeMode === "light";
@@ -241,15 +256,20 @@ class AppController {
       const settings = this.stateManager.getState().settings;
       if (inputs.colCount) inputs.colCount.value = settings.columnsCount || 6;
       if (inputs.cardSize) inputs.cardSize.value = settings.cardSize || 100;
+      if (inputs.searchSize) inputs.searchSize.value = settings.searchSize || 100;
       if (inputs.simpleMode)
         inputs.simpleMode.checked = settings.simpleMode || false;
       if (inputs.openInNewTab)
         inputs.openInNewTab.checked = settings.openInNewTab || false;
+      if (inputs.showSearchBar)
+        inputs.showSearchBar.checked = settings.showSearchBar || false;
       if (inputs.language) inputs.language.value = settings.language || "ar";
       if (containers.colCountValue)
         containers.colCountValue.textContent = settings.columnsCount || 6;
       if (containers.cardSizeValue)
         containers.cardSizeValue.textContent = (settings.cardSize || 100) + "%";
+      if (containers.searchSizeValue)
+        containers.searchSizeValue.textContent = (settings.searchSize || 100) + "%";
 
       this.ui.toggleModal("settings", true);
     });
@@ -434,9 +454,13 @@ class AppController {
         settings.columnsCount = parseInt(inputs.colCount.value, 10);
       if (inputs.cardSize)
         settings.cardSize = parseInt(inputs.cardSize.value, 10);
+      if (inputs.searchSize)
+        settings.searchSize = parseInt(inputs.searchSize.value, 10);
       if (inputs.simpleMode) settings.simpleMode = inputs.simpleMode.checked;
       if (inputs.openInNewTab)
         settings.openInNewTab = inputs.openInNewTab.checked;
+      if (inputs.showSearchBar)
+        settings.showSearchBar = inputs.showSearchBar.checked;
       if (inputs.language) settings.language = inputs.language.value;
       this.stateManager.save();
       this.ui.applySettings(settings, this.mediaStorage);
@@ -451,10 +475,13 @@ class AppController {
           const settings = this.stateManager.getState().settings;
           settings.columnsCount = 6;
           settings.cardSize = 100;
+          settings.searchSize = 100;
           settings.simpleMode = false;
           settings.openInNewTab = false;
+          settings.showSearchBar = false;
           if (inputs.simpleMode) inputs.simpleMode.checked = false;
           if (inputs.openInNewTab) inputs.openInNewTab.checked = false;
+          if (inputs.showSearchBar) inputs.showSearchBar.checked = false;
           this.stateManager.save();
           this.ui.applySettings(settings, this.mediaStorage);
           this.renderAll();
@@ -474,6 +501,13 @@ class AppController {
       inputs.cardSize.addEventListener("input", (e) => {
         if (containers.cardSizeValue)
           containers.cardSizeValue.textContent = e.target.value + "%";
+      });
+    }
+
+    if (inputs.searchSize) {
+      inputs.searchSize.addEventListener("input", (e) => {
+        if (containers.searchSizeValue)
+          containers.searchSizeValue.textContent = e.target.value + "%";
       });
     }
 

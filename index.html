@@ -117,6 +117,14 @@
       </div>
     </header>
 
+    <!-- Search Bar Wrapper -->
+    <div id="searchBarWrapper" class="search-bar-wrapper hidden">
+      <div class="search-box">
+        <i data-lucide="search" width="20" height="20" stroke-width="2.5"></i>
+        <input type="text" id="searchInput" placeholder="Search the web..." data-i18n-placeholder="search_placeholder" dir="auto" autocomplete="off" />
+      </div>
+    </div>
+
     <!-- تم إعادة اللوحة لتكون بنظام الشبك (Grid/Columns) المنظم -->
     <div id="board" class="board"></div>
 
@@ -270,7 +278,7 @@
           >
             اختر مظهرك المفضل
           </h2>
-          <button id="closeTemplatesX" class="close-x-btn">
+          <button id="closeTemplatesX" class="header-btn" style="padding: 10px; justify-content: center; height: 42px; width: 42px;">
             <i data-lucide="x" width="20" height="20"></i>
           </button>
         </div>
@@ -354,6 +362,31 @@
               <span class="slider round"></span>
             </label>
           </div>
+          <div
+            style="
+              height: 1px;
+              background: var(--border-color);
+              opacity: 0.4;
+              margin: 12px 0;
+            "
+          ></div>
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+            "
+          >
+            <span
+              style="font-size: 14px; color: var(--text-color); opacity: 0.9"
+              data-i18n="show_search_bar"
+              >إظهار شريط البحث</span
+            >
+            <label class="switch">
+              <input type="checkbox" id="showSearchBarInput" />
+              <span class="slider round"></span>
+            </label>
+          </div>
         </div>
 
         <div class="setting-group">
@@ -417,6 +450,44 @@
             <input
               type="range"
               id="cardSizeInput"
+              min="60"
+              max="150"
+              step="5"
+              value="100"
+              class="slider-premium"
+            />
+          </div>
+
+          <div
+            style="
+              height: 1px;
+              background: var(--border-color);
+              opacity: 0.4;
+              margin: 16px 0;
+            "
+          ></div>
+          <div>
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 8px;
+              "
+            >
+              <span
+                style="font-size: 14px; color: var(--text-color); opacity: 0.9"
+                data-i18n="search_size"
+                >حجم شريط البحث</span
+              >
+              <span
+                id="searchSizeValue"
+                style="font-weight: 700; color: var(--primary-color)"
+                >100%</span
+              >
+            </div>
+            <input
+              type="range"
+              id="searchSizeInput"
               min="60"
               max="150"
               step="5"
