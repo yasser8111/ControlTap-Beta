@@ -774,7 +774,7 @@ class AppController {
     const dataStr = JSON.stringify(state, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
 
-    const exportFileDefaultName = 'redeye-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+    const exportFileDefaultName = 'controltap-backup-' + new Date().toISOString().slice(0, 10) + '.json';
 
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
