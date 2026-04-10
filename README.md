@@ -5,6 +5,13 @@
 
 A beautifully tailored New Tab experience. Minimalist, distraction-free, and purely customizable.
 
+## Quick Install
+
+1. Download the repo.
+2. Open `chrome://extensions` or `edge://extensions`.
+3. Toggle **Developer mode**.
+4. Select **Load unpacked** and choose this folder.
+
 ## Core Experience
 
 - **Multi-Page Workspaces**: Drag, drop, and organize bookmarks effortlessly across dynamic pages.
@@ -17,13 +24,6 @@ A beautifully tailored New Tab experience. Minimalist, distraction-free, and pur
 - **Your Canvas**: Upload custom hi-res videos or photos directly to local storage.
 - **Absolute Control**: Grid sizing (2–12 cols), variable card scaling, and global dark/light modes.
 - **Pure Zen**: Switch to "Simple Mode" for a focused, icon-only layout.
-
-## Quick Install
-
-1. Download the repo.
-2. Open `chrome://extensions` or `edge://extensions`.
-3. Toggle **Developer mode**.
-4. Select **Load unpacked** and choose this folder.
 
 ## Under the Hood
 Vanilla HTML/CSS/JS • MVC Architecture • IndexedDB • SortableJS 
