@@ -57,6 +57,14 @@ class UIManager {
     this.applyTranslations(lang);
 
     root.style.setProperty("--primary-color", settings.primaryColor);
+    
+    // Convert hex to rgb for transparency usage
+    const hex = settings.primaryColor.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    root.style.setProperty("--primary-color-rgb", `${r}, ${g}, ${b}`);
+
     root.style.setProperty("--card-opacity", settings.cardOpacity);
     const cardScale = Math.max(0.5, (settings.cardSize || 100) / 100);
     const searchScale = Math.max(0.5, (settings.searchSize || 100) / 100);

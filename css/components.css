@@ -740,24 +740,14 @@ body.simple-mode .header-btn {
   display: flex;
   align-items: center;
   width: 100%;
-  background: rgba(var(--card-bg-rgb), var(--card-opacity));
-  backdrop-filter: blur(var(--blur-amount));
-  -webkit-backdrop-filter: blur(var(--blur-amount));
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-full);
   padding: 12px 20px;
-  box-shadow: var(--shadow-sm);
-  transition:
-    border-color var(--transition-fast),
-    box-shadow var(--transition-fast),
-    transform 0.2s ease;
+  background: transparent;
+  border: none;
+  box-shadow: none;
 }
 
 .search-box:focus-within {
-  border-color: var(--primary-color);
-  box-shadow:
-    0 0 0 3px rgba(var(--primary-color), 0.2),
-    var(--shadow-md);
+  /* Border/glow handled by container */
 }
 
 .search-box input {
@@ -773,6 +763,68 @@ body.simple-mode .header-btn {
 .search-box input::placeholder {
   color: var(--text-color);
   opacity: 0.4;
+}
+
+/* Suggestions Dropdown */
+.search-box-container {
+  width: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: rgba(var(--card-bg-rgb), var(--card-opacity));
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.search-box-container:focus-within {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.2), var(--shadow-md);
+}
+
+.search-suggestions {
+  display: flex;
+  flex-direction: column;
+  padding: 0 12px 12px 12px;
+  max-height: 350px;
+  overflow-y: auto;
+  border-top: 1px solid rgba(128, 128, 128, 0.15);
+  margin: 0;
+}
+
+.search-suggestions.hidden {
+  display: none !important;
+}
+
+.suggestion-item {
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  color: var(--text-color);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+  font-size: 15px;
+  text-align: start;
+}
+
+.suggestion-item:hover,
+.suggestion-item.selected {
+  background: rgba(var(--primary-color-rgb), 0.15);
+  color: var(--primary-color);
+}
+
+.suggestion-item i {
+  opacity: 0.5;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* -----------------------------

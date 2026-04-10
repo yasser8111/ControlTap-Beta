@@ -217,20 +217,7 @@ class AppController {
       addPageBtn.addEventListener("click", () => this._addPage());
     }
 
-    const searchInput = document.getElementById("searchInput");
-    if (searchInput) {
-      searchInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" && e.target.value.trim()) {
-          const currentSettings = this.stateManager.getState().settings;
-          const target = currentSettings.openInNewTab ? "_blank" : "_self";
-          const query = encodeURIComponent(e.target.value.trim());
-          window.open(`https://www.google.com/search?q=${query}`, target);
-          if (!currentSettings.openInNewTab) {
-             e.target.value = "";
-          }
-        }
-      });
-    }
+    this._initSearchSuggestions();
 
     document.getElementById("customizeBtn").addEventListener("click", () => {
       const settings = this.stateManager.getState().settings;
@@ -811,5 +798,182 @@ class AppController {
     reader.readAsText(file);
     // Reset input
     event.target.value = '';
+  }
+
+  _initSearchSuggestions() {
+    const searchInput = document.getElementById("searchInput");
+    const suggestionsBox = document.getElementById("searchSuggestions");
+    if (!searchInput || !suggestionsBox) return;
+
+    let selectedIndex = -1;
+    let currentSuggestions = []; // Array of objects: { type: 'history'|'site'|'search', text: string, url: string }
+    let debounceTimer;
+
+    const updateSelection = (index) => {
+      const items = suggestionsBox.querySelectorAll(".suggestion-item");
+      items.forEach((item, i) => {
+        item.classList.toggle("selected", i === index);
+      });
+    };
+
+    const saveToHistory = (query) => {
+      const state = this.stateManager.getState();
+      state.searchHistory = state.searchHistory || [];
+      // Remove if already exists to move to top
+      state.searchHistory = state.searchHistory.filter(h => h !== query);
+      state.searchHistory.unshift(query);
+      if (state.searchHistory.length > 10) {
+        state.searchHistory.pop();
+      }
+      this.stateManager.save();
+    };
+
+    const performAction = (suggestion) => {
+      if (!suggestion) return;
+      const currentSettings = this.stateManager.getState().settings;
+      const target = currentSettings.openInNewTab ? "_blank" : "_self";
+      
+      if (suggestion.type === "site") {
+        window.open(suggestion.url, target);
+      } else {
+        saveToHistory(suggestion.text);
+        const encodedQuery = encodeURIComponent(suggestion.text);
+        window.open(`https://www.google.com/search?q=${encodedQuery}`, target);
+      }
+
+      if (!currentSettings.openInNewTab) {
+        searchInput.value = "";
+        suggestionsBox.classList.add("hidden");
+      } else {
+        suggestionsBox.classList.add("hidden");
+      }
+    };
+
+    const getAllSites = () => {
+      const sites = [];
+      const state = this.stateManager.getState();
+      state.pages.forEach(page => {
+        page.groups.forEach(group => {
+          group.sites.forEach(site => {
+            sites.push(site);
+          });
+        });
+      });
+      return sites;
+    };
+
+    const renderSuggestions = () => {
+      suggestionsBox.innerHTML = "";
+      if (currentSuggestions.length === 0) {
+        suggestionsBox.classList.add("hidden");
+        return;
+      }
+
+      currentSuggestions.forEach((sug, index) => {
+        const div = document.createElement("div");
+        div.className = "suggestion-item";
+        
+        let icon = "search";
+        if (sug.type === "history") icon = "history";
+        if (sug.type === "site") icon = "globe";
+
+        let subText = sug.type === "site" ? `<span style="font-size: 11px; opacity: 0.5; margin-inline-start: 8px;">${sug.url}</span>` : "";
+
+        div.innerHTML = `<i data-lucide="${icon}" width="14" height="14"></i><span>${sug.text}</span>${subText}`;
+        div.addEventListener("click", () => performAction(sug));
+        suggestionsBox.appendChild(div);
+      });
+      
+      if (typeof lucide !== "undefined") lucide.createIcons();
+      suggestionsBox.classList.remove("hidden");
+      selectedIndex = -1;
+    };
+
+    const handleInput = () => {
+      const query = searchInput.value.trim().toLowerCase();
+      const state = this.stateManager.getState();
+      const history = state.searchHistory || [];
+      const allSites = getAllSites();
+      
+      currentSuggestions = [];
+
+      if (!query) {
+        // Show recent history
+        history.slice(0, 6).forEach(h => {
+          currentSuggestions.push({ type: "history", text: h, url: "" });
+        });
+      } else {
+        // 1. Direct Search fallback (always first)
+        currentSuggestions.push({ type: "search", text: query, url: "" });
+
+        // 2. Filter Sites from the Board
+        const matchedSites = allSites.filter(s => s.name.toLowerCase().includes(query) || s.url.toLowerCase().includes(query)).slice(0, 3);
+        matchedSites.forEach(s => {
+           currentSuggestions.push({ type: "site", text: s.name, url: s.url });
+        });
+
+        // 3. Filter History
+        const matchedHistory = history.filter(h => h.toLowerCase().includes(query) && h.toLowerCase() !== query).slice(0, 3);
+        matchedHistory.forEach(h => {
+           currentSuggestions.push({ type: "history", text: h, url: "" });
+        });
+      }
+
+      renderSuggestions();
+    };
+
+    // Open suggestions when focusing on the input
+    searchInput.addEventListener("focus", handleInput);
+
+    searchInput.addEventListener("input", (e) => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(handleInput, 150);
+    });
+
+    searchInput.addEventListener("keydown", (e) => {
+      if (suggestionsBox.classList.contains("hidden")) {
+        if (e.key === "Enter" && searchInput.value.trim()) {
+           performAction({ type: "search", text: searchInput.value.trim(), url: "" });
+        }
+        return;
+      }
+
+      const items = suggestionsBox.querySelectorAll(".suggestion-item");
+      if (currentSuggestions.length === 0 && e.key === "Enter") {
+        e.preventDefault();
+        if (searchInput.value.trim()) {
+          performAction({ type: "search", text: searchInput.value.trim(), url: "" });
+        }
+        return;
+      }
+
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        selectedIndex = (selectedIndex + 1) % currentSuggestions.length;
+        updateSelection(selectedIndex);
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        selectedIndex = (selectedIndex - 1 + currentSuggestions.length) % currentSuggestions.length;
+        updateSelection(selectedIndex);
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        if (selectedIndex >= 0 && selectedIndex < currentSuggestions.length) {
+          performAction(currentSuggestions[selectedIndex]);
+        } else {
+          performAction(currentSuggestions[0] || { type: "search", text: searchInput.value.trim(), url: "" });
+        }
+      } else if (e.key === "Escape") {
+        suggestionsBox.classList.add("hidden");
+        selectedIndex = -1;
+        searchInput.blur();
+      }
+    });
+
+    // Close when clicking outside
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest(".search-box-container")) {
+        suggestionsBox.classList.add("hidden");
+      }
+    });
   }
 }

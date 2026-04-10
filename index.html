@@ -119,8 +119,11 @@
 
     <!-- Search Bar Wrapper -->
     <div id="searchBarWrapper" class="search-bar-wrapper hidden">
-      <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Search the web..." data-i18n-placeholder="search_placeholder" dir="ltr" autocomplete="off" />
+      <div class="search-box-container">
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="Search the web..." data-i18n-placeholder="search_placeholder" dir="ltr" autocomplete="off" />
+        </div>
+        <div id="searchSuggestions" class="search-suggestions hidden"></div>
       </div>
     </div>
 

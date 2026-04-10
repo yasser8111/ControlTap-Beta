@@ -104,6 +104,7 @@ class StateManager {
     }
 
     this.state.customTemplates ??= [];
+    this.state.searchHistory ??= [];
 
     this.state.settings.bgType ??= "preset";
     this.state.settings.themeMode ??= "light";
