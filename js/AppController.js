@@ -7,6 +7,7 @@ class AppController {
     this.stateManager = new StateManager();
     this.mediaStorage = new MediaStorage();
     this.ui = new UIManager();
+    this.searchEngine = new SearchEngine(this.stateManager);
 
     this.sortableInstances = [];
     this._bindStaticEvents();
@@ -270,6 +271,8 @@ class AppController {
         inputs.openInNewTab.checked = settings.openInNewTab || false;
       if (inputs.showSearchBar)
         inputs.showSearchBar.checked = settings.showSearchBar || false;
+      if (inputs.enableHistorySearch)
+        inputs.enableHistorySearch.checked = settings.enableHistorySearch !== false; // default true
       if (inputs.language) inputs.language.value = settings.language || "ar";
       if (inputs.hideScrollbar)
         inputs.hideScrollbar.checked = settings.hideScrollbar || false;
@@ -488,6 +491,8 @@ class AppController {
         settings.openInNewTab = inputs.openInNewTab.checked;
       if (inputs.showSearchBar)
         settings.showSearchBar = inputs.showSearchBar.checked;
+      if (inputs.enableHistorySearch)
+        settings.enableHistorySearch = inputs.enableHistorySearch.checked;
       if (inputs.language) settings.language = inputs.language.value;
       if (inputs.hideScrollbar)
         settings.hideScrollbar = inputs.hideScrollbar.checked;
@@ -517,6 +522,7 @@ class AppController {
           settings.simpleMode = true;
           settings.openInNewTab = false;
           settings.showSearchBar = true;
+          settings.enableHistorySearch = true;
           settings.language = 'en';
           
           // Background/Appearance defaults
@@ -530,6 +536,7 @@ class AppController {
           if (inputs.simpleMode) inputs.simpleMode.checked = true;
           if (inputs.openInNewTab) inputs.openInNewTab.checked = false;
           if (inputs.showSearchBar) inputs.showSearchBar.checked = true;
+          if (inputs.enableHistorySearch) inputs.enableHistorySearch.checked = true;
           if (inputs.language) inputs.language.value = 'en';
           if (inputs.hideScrollbar) inputs.hideScrollbar.checked = false;
           
@@ -811,39 +818,38 @@ class AppController {
     if (!searchInput || !suggestionsBox) return;
 
     let selectedIndex = -1;
-    let currentSuggestions = []; // Array of objects: { type: 'history'|'site'|'search', text: string, url: string }
+    let currentSuggestions = [];
     let debounceTimer;
-
-    const updateSelection = (index) => {
-      const items = suggestionsBox.querySelectorAll(".suggestion-item");
-      items.forEach((item, i) => {
-        item.classList.toggle("selected", i === index);
-      });
-    };
-
-    const saveToHistory = (query) => {
-      const state = this.stateManager.getState();
-      state.searchHistory = state.searchHistory || [];
-      // Remove if already exists to move to top
-      state.searchHistory = state.searchHistory.filter(h => h !== query);
-      state.searchHistory.unshift(query);
-      if (state.searchHistory.length > 10) {
-        state.searchHistory.pop();
-      }
-      this.stateManager.save();
-    };
 
     const performAction = (suggestion) => {
       if (!suggestion) return;
       const currentSettings = this.stateManager.getState().settings;
       const target = currentSettings.openInNewTab ? "_blank" : "_self";
       
-      if (suggestion.type === "site") {
+      if (suggestion.type === "site" || suggestion.type === "exact_site" || suggestion.type === "history") {
         window.open(suggestion.url, target);
       } else {
-        saveToHistory(suggestion.text);
-        const encodedQuery = encodeURIComponent(suggestion.text);
-        window.open(`https://www.google.com/search?q=${encodedQuery}`, target);
+        const query = suggestion.text.trim();
+        
+        // Regex to check if it looks like a URL (starts with protocol or is a domain.tld)
+        const isUrl = /^https?:\/\//i.test(query) || 
+                      /^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}(:\d+)?(\/.*)?$/i.test(query);
+
+        if (isUrl) {
+          const finalUrl = /^https?:\/\//i.test(query) ? query : `https://${query}`;
+          window.open(finalUrl, target);
+        } else {
+          // It's a search term
+          const state = this.stateManager.getState();
+          state.searchHistory = state.searchHistory || [];
+          state.searchHistory = state.searchHistory.filter(h => h !== query);
+          state.searchHistory.unshift(query);
+          if (state.searchHistory.length > 10) state.searchHistory.pop();
+          this.stateManager.save();
+          
+          const encodedQuery = encodeURIComponent(query);
+          window.open(`https://www.google.com/search?q=${encodedQuery}`, target);
+        }
       }
 
       if (!currentSettings.openInNewTab) {
@@ -854,83 +860,16 @@ class AppController {
       }
     };
 
-    const getAllSites = () => {
-      const sites = [];
-      const state = this.stateManager.getState();
-      state.pages.forEach(page => {
-        page.groups.forEach(group => {
-          group.sites.forEach(site => {
-            sites.push(site);
-          });
-        });
-      });
-      return sites;
-    };
-
-    const renderSuggestions = () => {
-      suggestionsBox.innerHTML = "";
-      if (currentSuggestions.length === 0) {
-        suggestionsBox.classList.add("hidden");
-        return;
-      }
-
-      currentSuggestions.forEach((sug, index) => {
-        const div = document.createElement("div");
-        div.className = "suggestion-item";
-        
-        let icon = "search";
-        if (sug.type === "history") icon = "history";
-        if (sug.type === "site") icon = "globe";
-
-        let subText = sug.type === "site" ? `<span style="font-size: 11px; opacity: 0.5; margin-inline-start: 8px;">${sug.url}</span>` : "";
-
-        div.innerHTML = `<i data-lucide="${icon}" width="14" height="14"></i><span>${sug.text}</span>${subText}`;
-        div.addEventListener("click", () => performAction(sug));
-        suggestionsBox.appendChild(div);
-      });
-      
-      if (typeof lucide !== "undefined") lucide.createIcons();
-      suggestionsBox.classList.remove("hidden");
+    const handleInput = async () => {
+      const query = searchInput.value.trim();
+      currentSuggestions = await this.searchEngine.getSuggestions(query);
       selectedIndex = -1;
+      this.ui.renderSearchSuggestions(currentSuggestions, selectedIndex, performAction);
     };
 
-    const handleInput = () => {
-      const query = searchInput.value.trim().toLowerCase();
-      const state = this.stateManager.getState();
-      const history = state.searchHistory || [];
-      const allSites = getAllSites();
-      
-      currentSuggestions = [];
-
-      if (!query) {
-        // Show recent history
-        history.slice(0, 6).forEach(h => {
-          currentSuggestions.push({ type: "history", text: h, url: "" });
-        });
-      } else {
-        // 1. Direct Search fallback (always first)
-        currentSuggestions.push({ type: "search", text: query, url: "" });
-
-        // 2. Filter Sites from the Board
-        const matchedSites = allSites.filter(s => s.name.toLowerCase().includes(query) || s.url.toLowerCase().includes(query)).slice(0, 3);
-        matchedSites.forEach(s => {
-           currentSuggestions.push({ type: "site", text: s.name, url: s.url });
-        });
-
-        // 3. Filter History
-        const matchedHistory = history.filter(h => h.toLowerCase().includes(query) && h.toLowerCase() !== query).slice(0, 3);
-        matchedHistory.forEach(h => {
-           currentSuggestions.push({ type: "history", text: h, url: "" });
-        });
-      }
-
-      renderSuggestions();
-    };
-
-    // Open suggestions when focusing on the input
     searchInput.addEventListener("focus", handleInput);
 
-    searchInput.addEventListener("input", (e) => {
+    searchInput.addEventListener("input", () => {
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(handleInput, 150);
     });
@@ -938,16 +877,15 @@ class AppController {
     searchInput.addEventListener("keydown", (e) => {
       if (suggestionsBox.classList.contains("hidden")) {
         if (e.key === "Enter" && searchInput.value.trim()) {
-           performAction({ type: "search", text: searchInput.value.trim(), url: "" });
+           performAction({ type: "search", text: searchInput.value.trim(), url: "search_action" });
         }
         return;
       }
 
-      const items = suggestionsBox.querySelectorAll(".suggestion-item");
       if (currentSuggestions.length === 0 && e.key === "Enter") {
         e.preventDefault();
         if (searchInput.value.trim()) {
-          performAction({ type: "search", text: searchInput.value.trim(), url: "" });
+          performAction({ type: "search", text: searchInput.value.trim(), url: "search_action" });
         }
         return;
       }
@@ -955,17 +893,17 @@ class AppController {
       if (e.key === "ArrowDown") {
         e.preventDefault();
         selectedIndex = (selectedIndex + 1) % currentSuggestions.length;
-        updateSelection(selectedIndex);
+        this.ui.updateSearchSelection(selectedIndex);
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
         selectedIndex = (selectedIndex - 1 + currentSuggestions.length) % currentSuggestions.length;
-        updateSelection(selectedIndex);
+        this.ui.updateSearchSelection(selectedIndex);
       } else if (e.key === "Enter") {
         e.preventDefault();
         if (selectedIndex >= 0 && selectedIndex < currentSuggestions.length) {
           performAction(currentSuggestions[selectedIndex]);
         } else {
-          performAction(currentSuggestions[0] || { type: "search", text: searchInput.value.trim(), url: "" });
+          performAction(currentSuggestions[0] || { type: "search", text: searchInput.value.trim(), url: "search_action" });
         }
       } else if (e.key === "Escape") {
         suggestionsBox.classList.add("hidden");
@@ -974,7 +912,6 @@ class AppController {
       }
     });
 
-    // Close when clicking outside
     document.addEventListener("click", (e) => {
       if (!e.target.closest(".search-box-container")) {
         suggestionsBox.classList.add("hidden");

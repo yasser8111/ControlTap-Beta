@@ -388,6 +388,25 @@
 
           <div
             style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              margin-bottom: 12px;
+            "
+          >
+            <span
+              style="font-size: 14px; color: var(--text-color); opacity: 0.9"
+              data-i18n="enable_history_search"
+              >تفعيل اقتراحات سجل التصفح</span
+            >
+            <label class="switch">
+              <input type="checkbox" id="enableHistorySearchInput" />
+              <span class="slider round"></span>
+            </label>
+          </div>
+
+          <div
+            style="
               height: 1px;
               background: var(--border-color);
               opacity: 0.3;
@@ -765,6 +784,7 @@
     <script src="js/config.js"></script>
     <script src="js/MediaStorage.js"></script>
     <script src="js/StateManager.js"></script>
+    <script src="js/SearchEngine.js"></script>
     <script src="js/UIManager.js"></script>
     <script src="js/AppController.js"></script>
     <script src="js/main.js"></script>

@@ -34,7 +34,8 @@ class StateManager {
           language: "en",
           showSearchBar: true,
           searchSize: 100,
-          hideScrollbar: false
+          hideScrollbar: false,
+          enableHistorySearch: true
         },
         pages: [
           {
@@ -118,6 +119,7 @@ class StateManager {
     this.state.settings.simpleMode ??= false;
     this.state.settings.openInNewTab ??= false;
     this.state.settings.showSearchBar ??= false;
+    this.state.settings.enableHistorySearch ??= true;
     this.state.settings.language ??= "en";
     this.state.settings.hideScrollbar ??= false;
 

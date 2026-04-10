@@ -30,6 +30,7 @@ class UIManager {
         simpleMode: document.getElementById("simpleModeInput"),
         openInNewTab: document.getElementById("openInNewTabInput"),
         showSearchBar: document.getElementById("showSearchBarInput"),
+        enableHistorySearch: document.getElementById("enableHistorySearchInput"),
         language: document.getElementById("languageInput"),
         hideScrollbar: document.getElementById("hideScrollbarInput"),
       },
@@ -879,6 +880,104 @@ class UIManager {
     const modal = this.elements.modals[modalKey];
     if (modal) {
       modal.style.display = isVisible ? "flex" : "none";
+    }
+  }
+
+  renderSearchSuggestions(suggestions, selectedIndex, performAction) {
+    const { searchBarWrapper } = this.elements.containers;
+    const suggestionsBox = document.getElementById("searchSuggestions");
+    
+    suggestionsBox.innerHTML = "";
+    if (!suggestions || suggestions.length === 0) {
+      if (searchBarWrapper) {
+          const query = document.getElementById("searchInput").value.trim();
+          if (query) {
+             suggestionsBox.innerHTML = `
+                <div style="padding: 16px; text-align: center; color: var(--text-color); opacity: 0.6; font-size: 13px;">
+                   <i data-lucide="search-x" width="24" height="24" style="margin-bottom: 8px; display: inline-block;"></i><br/>
+                   ${this.getTranslation("no_search_results") || "لم يتم العثور على نتائج"}
+                </div>
+             `;
+             suggestionsBox.classList.remove("hidden");
+             if (typeof lucide !== "undefined") lucide.createIcons();
+          } else {
+             suggestionsBox.classList.add("hidden");
+          }
+      }
+      return;
+    }
+
+    suggestions.forEach((sug, index) => {
+      const div = document.createElement("div");
+      div.className = "suggestion-item" + (index === selectedIndex ? " selected" : "");
+      
+      let icon = "search";
+      if (sug.type === "history" || sug.type === "search_history") icon = "history";
+      if (sug.type === "site") icon = "globe";
+      if (sug.type === "exact_site") icon = "star"; // Exact match highlight
+
+      let subText = "";
+      if (sug.url && sug.url !== "search_action") {
+         subText = `<span class="suggestion-url" style="font-size: 11px; opacity: 0.45; margin-inline-start: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 0 1 auto; min-width: 0;">${sug.url}</span>`;
+      }
+
+      // Highlight match
+      const query = document.getElementById("searchInput").value.trim();
+      let highlightedText = sug.text;
+      if (query && sug.type !== "search") {
+         const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+         const regex = new RegExp(`(${escapedQuery})`, 'gi');
+         highlightedText = sug.text.replace(regex, '<span style="color: var(--primary-color); font-weight: bold;">$1</span>');
+      }
+
+      div.innerHTML = `<div style="display: flex; align-items: center; width: 100%; overflow: hidden;"><i data-lucide="${icon}" width="14" height="14" style="flex-shrink: 0; opacity: 0.6;"></i><span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 0 1 auto; min-width: 0; margin-inline-start: 12px; font-weight: 500;">${highlightedText}</span>${subText}</div>`;
+      div.addEventListener("click", () => performAction(sug));
+      div.addEventListener("mouseenter", () => {
+         const items = suggestionsBox.querySelectorAll(".suggestion-item");
+         items.forEach(el => el.classList.remove("selected"));
+         div.classList.add("selected");
+      });
+      suggestionsBox.appendChild(div);
+    });
+    
+    if (typeof lucide !== "undefined") lucide.createIcons();
+    suggestionsBox.classList.remove("hidden");
+    
+    // Initial scroll sync
+    this.updateSearchSelection(selectedIndex);
+  }
+
+  updateSearchSelection(index) {
+    const suggestionsBox = document.getElementById("searchSuggestions");
+    if (!suggestionsBox) return;
+
+    const items = suggestionsBox.querySelectorAll(".suggestion-item");
+    items.forEach((item, i) => {
+      item.classList.toggle("selected", i === index);
+    });
+
+    if (index >= 0 && items[index]) {
+      const container = suggestionsBox;
+      const item = items[index];
+      
+      const itemRect = item.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+
+      if (index === 0) {
+        // Absolutely at the top
+        container.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (index === items.length - 1) {
+        // Absolutely at the bottom
+        container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+      } else if (itemRect.top < containerRect.top) {
+        // Scrolling UP: it's clipped at the top. Scroll up by the exact hidden distance.
+        const hiddenAmount = containerRect.top - itemRect.top;
+        container.scrollBy({ top: -(hiddenAmount + 4), behavior: 'smooth' }); // small 4px top gap
+      } else if (itemRect.bottom > containerRect.bottom) {
+        // Scrolling DOWN: it's clipped at the bottom. Scroll down by the exact hidden distance.
+        const hiddenAmount = itemRect.bottom - containerRect.bottom;
+        container.scrollBy({ top: hiddenAmount + 12, behavior: 'smooth' }); // 12px bottom space
+      }
     }
   }
 }

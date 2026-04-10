@@ -139,15 +139,21 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  cursor: grab;
   background: rgba(var(--card-bg-rgb), calc(var(--card-opacity) * 0.5));
   border-radius: var(--radius) var(--radius) 0 0;
   border-bottom: 1px solid var(--border-color);
   user-select: none;
 }
 
-.group-header:active {
-  cursor: grabbing;
+
+
+/* Fix for SortableJS fallback clone */
+.sortable-fallback {
+  opacity: 0.9 !important;
+  z-index: 99999 !important;
+  pointer-events: none !important;
+  transform: scale(1.02);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2) !important;
 }
 
 .group-title {
@@ -302,7 +308,6 @@
   border: 1px solid transparent;
   padding: 10px 14px;
   border-radius: 10px;
-  cursor: grab;
   transition:
     background-color 0.3s,
     border-color 0.2s,
@@ -310,6 +315,8 @@
     color 0.2s;
   text-decoration: none;
   color: var(--text-color);
+  user-select: none; /* Prevents text selection cursor during drag */
+  -webkit-user-drag: element;
 }
 
 .site-item:hover {
@@ -319,9 +326,6 @@
   color: var(--group-title-color);
 }
 
-.site-item:active {
-  cursor: grabbing;
-}
 
 .site-favicon {
   width: 24px;
@@ -334,6 +338,7 @@
 .site-content {
   display: flex;
   flex-direction: column;
+  pointer-events: none; /* Prevent text cursor inside the item */
   flex-grow: 1;
   min-width: 0; /* Important for ellipsis */
 }
@@ -728,7 +733,7 @@ body.simple-mode .header-btn {
   padding: 0 var(--space-xl);
   display: flex;
   justify-content: center;
-  z-index: 10;
+  z-index: 1000;
   zoom: var(--search-scale, 1);
 }
 
@@ -860,13 +865,6 @@ body.simple-mode .header-btn {
   overflow: hidden;
 }
 
-/* Ensure empty state feels clean and empty not broken */
-.skeleton-box::before {
-  content: "";
-  display: block;
-  padding-bottom: 100%; /* Makes some elements square by default if no height */
-}
-
 .skeleton-text {
   height: 14px;
   margin-bottom: 8px;
@@ -895,11 +893,6 @@ body.simple-mode .header-btn {
   min-height: 120px;
   color: var(--text-color);
   user-select: none;
-  cursor: grab;
-}
-
-.clock-widget:active {
-  cursor: grabbing;
 }
 
 .clock-time {
