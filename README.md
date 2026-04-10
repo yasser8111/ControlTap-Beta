@@ -5,12 +5,16 @@
 
 A beautifully tailored New Tab experience. Minimalist, distraction-free, and purely customizable.
 
-## Quick Install
+## Installation Guide
 
-1. Download the repo.
-2. Open `chrome://extensions` or `edge://extensions`.
-3. Toggle **Developer mode**.
-4. Select **Load unpacked** and choose this folder.
+Since ControlTap is in Beta and running locally, follow these simple steps to install it:
+
+1. **Download the Extension:** Click on `Code` -> `Download ZIP` in this repository, then extract the ZIP file to a safe, permanent folder on your computer.
+2. **Access Extension Settings:** Open Chrome and type `chrome://extensions` in the address bar (or `edge://extensions` for MS Edge).
+3. **Enable Developer Mode:** Turn on the **"Developer mode"** toggle switch, usually located in the top-right corner of the screen.
+4. **Load the Project:** Click the **"Load unpacked"** button that appears on the top-left.
+5. **Select the Folder:** Browse your files and select the folder you extracted in step 1.
+6. **Confirm:** Open a new tab. If the browser asks if you want to keep the changes, click **Keep it**.
 
 ## Core Experience
 
