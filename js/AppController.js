@@ -142,7 +142,7 @@ class AppController {
       
       if (state.customTemplates.length < initialLength) {
         this.stateManager.save();
-        this.ui.renderTemplates((template) => this.applyTemplate(template), this.mediaStorage);
+        this.ui.renderTemplates((template) => this._onSelectTemplate(template), this.mediaStorage);
       }
     }
   }

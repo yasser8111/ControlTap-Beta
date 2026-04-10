@@ -80,14 +80,6 @@ const UI_TEMPLATES = [
     theme: "dark",
   },
   {
-    id: "tem-1119",
-    type: "video",
-    url: "backgrounds/1119.mp4",
-    color: "#00B4D8",
-    opacity: 0.15,
-    theme: "dark",
-  },
-  {
     id: "tem-11011",
     type: "video",
     url: "backgrounds/11011.mp4",

@@ -263,7 +263,7 @@ class UIManager {
     const allTemplates = [...customTemplates, ...UI_TEMPLATES];
 
     // Add 'Create Template' card
-    const createItem = document.createElement("button");
+    const createItem = document.createElement("div");
     createItem.className = "template-item add-template-card";
     createItem.style.border = "2px dashed var(--primary-color)";
     createItem.style.background = "rgba(var(--card-bg-rgb), 0.05)";
@@ -283,7 +283,7 @@ class UIManager {
     grid.appendChild(createItem);
 
     allTemplates.forEach((template) => {
-      const item = document.createElement("button");
+      const item = document.createElement("div");
       item.className = "template-item";
 
       const templateName =
