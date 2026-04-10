@@ -85,7 +85,7 @@ class StateManager {
             color: "#3b82f6",
             opacity: 0.5,
             theme: "dark",
-            isCustom": true
+            isCustom: true
           }
         ]
       };

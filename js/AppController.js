@@ -134,6 +134,19 @@ class AppController {
     }
   }
 
+  deleteCustomTemplate(templateId) {
+    const state = this.stateManager.getState();
+    if (state.customTemplates) {
+      const initialLength = state.customTemplates.length;
+      state.customTemplates = state.customTemplates.filter(t => t.id !== templateId);
+      
+      if (state.customTemplates.length < initialLength) {
+        this.stateManager.save();
+        this.ui.renderTemplates((template) => this.applyTemplate(template), this.mediaStorage);
+      }
+    }
+  }
+
   _addGroup(targetColIndex) {
     const activePage = this._getActivePage();
     if (!activePage) return;

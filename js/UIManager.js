@@ -316,9 +316,16 @@ class UIManager {
           ? this.getTranslation("theme_dark")
           : this.getTranslation("theme_light");
 
+      const deleteBtnStr = template.isCustom 
+        ? `<button class="delete-template-btn" data-id="${template.id}" title="${this.getTranslation('delete_template') || 'حذف القالب'}">
+             <i data-lucide="trash-2" width="16" height="16"></i>
+           </button>`
+        : '';
+
       item.innerHTML = `
                 <div class="template-preview" style="background: ${template.color};">
                     ${previewContent}
+                    ${deleteBtnStr}
                     <div class="template-overlay">
                         <span class="template-name-minimal">${templateName}</span>
                         <div class="template-badges-row">
@@ -328,6 +335,18 @@ class UIManager {
                     </div>
                 </div>
             `;
+
+      if (template.isCustom) {
+        const delBtn = item.querySelector('.delete-template-btn');
+        if (delBtn) {
+          delBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (confirm(this.getTranslation('delete_template_confirm') || 'هل أنت متأكد من حذف هذا القالب؟')) {
+               if (window.App) window.App.deleteCustomTemplate(template.id);
+            }
+          });
+        }
+      }
 
       // Hover to play/pause video logic
       if (isVideo) {

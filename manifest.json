@@ -7,6 +7,8 @@
     "newtab": "index.html"
   },
   "icons": {
+    "16": "icon128.png",
+    "48": "icon128.png",
     "128": "icon128.png"
   },
   "content_security_policy": {
