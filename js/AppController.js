@@ -211,7 +211,9 @@ class AppController {
       inputs.cardOpacity.value = settings.cardOpacity;
 
       const hexLabel = document.getElementById("colorHexLabel");
-      if (hexLabel) hexLabel.textContent = settings.primaryColor.toUpperCase();
+      if (hexLabel) hexLabel.value = settings.primaryColor.toUpperCase();
+
+      this.originalCustomizeSettings = JSON.parse(JSON.stringify(settings));
 
       if (containers.opacityValue) {
         containers.opacityValue.textContent = `${Math.round(settings.cardOpacity * 100)}%`;
@@ -252,8 +254,8 @@ class AppController {
       this.ui.toggleModal("settings", true);
     });
 
-    document.getElementById("templatesBtn").addEventListener("click", () => {
-      this.ui.renderTemplates((template) => this._onSelectTemplate(template));
+    document.getElementById("templatesBtn").addEventListener("click", async () => {
+      await this.ui.renderTemplates((template) => this._onSelectTemplate(template), this.mediaStorage);
       this.ui.toggleModal("templates", true);
     });
 
@@ -376,14 +378,22 @@ class AppController {
     document
       .getElementById("cancelCustomizeBtn")
       .addEventListener("click", () => {
+        if (this.originalCustomizeSettings) {
+          const state = this.stateManager.getState();
+          Object.assign(state.settings, this.originalCustomizeSettings);
+        }
         this.ui.toggleModal("customize", false);
       });
 
     const closeX = document.getElementById("closeCustomizeX");
     if (closeX) {
-      closeX.addEventListener("click", () =>
-        this.ui.toggleModal("customize", false),
-      );
+      closeX.addEventListener("click", () => {
+        if (this.originalCustomizeSettings) {
+          const state = this.stateManager.getState();
+          Object.assign(state.settings, this.originalCustomizeSettings);
+        }
+        this.ui.toggleModal("customize", false);
+      });
     }
 
     inputs.cardOpacity.addEventListener("input", (e) => {
@@ -583,7 +593,7 @@ class AppController {
       const sortableInstance = new Sortable(col, {
         group: "sharedColumns",
         animation: 150,
-        handle: ".group-header",
+        handle: ".group-header, .clock-widget",
         ghostClass: "sortable-ghost",
         filter: ".add-group-placeholder",
         onStart: () => document.body.classList.add("dragging-active"),

@@ -254,10 +254,20 @@ class UIManager {
     });
   }
 
-  renderTemplates(onSelectTemplate) {
+  async renderTemplates(onSelectTemplate, mediaStorage) {
     const grid = document.getElementById("templatesGrid");
     grid.innerHTML = "";
     
+    let customMediaBlobUrl = null;
+    let customMediaIsVideo = false;
+    if (mediaStorage) {
+      const media = await mediaStorage.loadMedia("customBg");
+      if (media?.file) {
+        customMediaBlobUrl = URL.createObjectURL(media.file);
+        customMediaIsVideo = media.isVideo;
+      }
+    }
+
     const state = window.App?.stateManager?.getState();
     const customTemplates = state?.customTemplates || [];
     
@@ -293,11 +303,17 @@ class UIManager {
 
       item.setAttribute("aria-label", `${this.getTranslation("aria_template")} ${templateName}`);
 
-      const isVideo = template.type === "video";
+      let isVideo = template.type === "video";
+      let renderUrl = template.url;
+
+      if (template.isCustom && !template.url && customMediaBlobUrl) {
+          renderUrl = customMediaBlobUrl;
+          isVideo = customMediaIsVideo;
+      }
       
       const previewContent = isVideo
-        ? `<video src="${template.url}" muted loop playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>`
-        : `<img src="${template.url}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;" alt="${templateName}" />`;
+        ? `<video src="${renderUrl || ''}" muted loop playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>`
+        : `<img src="${renderUrl || ''}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;" alt="${templateName}" />`;
 
       const badgeText = isVideo ? this.getTranslation("video_badge") : this.getTranslation("image_badge");
       const themeText = template.theme === "dark" ? this.getTranslation("theme_dark") : this.getTranslation("theme_light");
@@ -505,38 +521,142 @@ class UIManager {
       actions.onRenameGroup(group.id, newTitle);
     });
 
-    // Appending Title and Settings
-    headerEl.appendChild(titleEl);
-    headerEl.appendChild(this._createGroupSettingsDropdown(group, actions));
+    const titleLower = group.title.trim().toLowerCase();
+    const isAnalogClock = (titleLower === 'clock' || titleLower === 'clook' || titleLower === 'ساعة') && group.sites.length === 0;
+    const isDigitalClock = (titleLower === 'digital' || titleLower === 'ساعة رقمية') && group.sites.length === 0;
+    const isClockWidget = isAnalogClock || isDigitalClock;
 
-    const listEl = document.createElement("div");
-    listEl.className = "site-list";
-    listEl.dataset.groupId = group.id;
+    if (isClockWidget) {
+      // Magic Widget: Clock
+      // DO NOT Append Header for clock widget. Use an absolutely positioned dropdown
+      const settingsWrap = this._createGroupSettingsDropdown(group, actions, isAnalogClock ? 'analog' : 'digital');
+      settingsWrap.className = "group-settings-wrap clock-widget-settings";
+      groupEl.appendChild(settingsWrap);
 
-    group.sites.forEach((site) => {
-      listEl.appendChild(this._createSiteElement(site, group.id, actions));
-    });
+      const clockWrap = document.createElement("div");
+      clockWrap.className = "clock-widget";
+      
+      let updateClock;
+      
+      if (isDigitalClock) {
+        const timeWrap = document.createElement("div");
+        timeWrap.style.display = "flex";
+        timeWrap.style.flexDirection = "row";
+        timeWrap.style.alignItems = "baseline";
+        timeWrap.style.gap = "8px";
 
-    const addSiteBtn = document.createElement("button");
-    addSiteBtn.className = "add-site-btn";
-    addSiteBtn.innerHTML = `
-            <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
-                <i data-lucide="square-plus" width="14" height="14" stroke-width="2"></i>
-                <span data-i18n="add_site">${this.getTranslation("add_site")}</span>
-            </div>
-        `;
-    addSiteBtn.addEventListener("click", () =>
-      actions.onOpenAddSiteModal(group.id),
-    );
+        const timeEl = document.createElement("div");
+        timeEl.className = "clock-time";
 
-    groupEl.appendChild(headerEl);
-    groupEl.appendChild(listEl);
-    groupEl.appendChild(addSiteBtn);
+        const ampmEl = document.createElement("div");
+        ampmEl.style.fontSize = "1.5rem";
+        ampmEl.style.fontWeight = "700";
+        ampmEl.style.opacity = "0.7";
+        ampmEl.style.textTransform = "uppercase";
+
+        timeWrap.appendChild(timeEl);
+        timeWrap.appendChild(ampmEl);
+        clockWrap.appendChild(timeWrap);
+        
+        updateClock = () => {
+          if (!document.body.contains(clockWrap)) return;
+          const now = new Date();
+          let hours = now.getHours();
+          const minutes = now.getMinutes().toString().padStart(2, '0');
+          const isPm = hours >= 12;
+          hours = hours % 12;
+          hours = hours ? hours : 12; 
+          timeEl.textContent = `${hours}:${minutes}`;
+          ampmEl.textContent = isPm ? 'p' : 'a';
+        };
+      } else {
+        // Analog Block
+        const analogBox = document.createElement("div");
+        analogBox.className = "analog-clock";
+        
+        const hourHand = document.createElement("div");
+        hourHand.className = "analog-hand hour-hand";
+        const minHand = document.createElement("div");
+        minHand.className = "analog-hand min-hand";
+        const secHand = document.createElement("div");
+        secHand.className = "analog-hand sec-hand";
+        const centerDot = document.createElement("div");
+        centerDot.className = "clock-center";
+        
+        analogBox.appendChild(hourHand);
+        analogBox.appendChild(minHand);
+        analogBox.appendChild(secHand);
+        analogBox.appendChild(centerDot);
+        clockWrap.appendChild(analogBox);
+        
+        updateClock = () => {
+          if (!document.body.contains(clockWrap)) return;
+          const now = new Date();
+          const sec = now.getSeconds();
+          const min = now.getMinutes();
+          const hr = now.getHours();
+          
+          const secDeg = sec * 6; // 360 / 60
+          const minDeg = min * 6 + sec * 0.1;
+          const hrDeg = (hr % 12) * 30 + min * 0.5;
+          
+          secHand.style.transform = `translateX(-50%) rotate(${secDeg}deg)`;
+          minHand.style.transform = `translateX(-50%) rotate(${minDeg}deg)`;
+          hourHand.style.transform = `translateX(-50%) rotate(${hrDeg}deg)`;
+        };
+      }
+      
+      groupEl.appendChild(clockWrap);
+      
+      updateClock();
+      const interval = setInterval(updateClock, 1000);
+      
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.removedNodes.forEach((node) => {
+            if (node === groupEl || node.contains(groupEl)) {
+              clearInterval(interval);
+              observer.disconnect();
+            }
+          });
+        });
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+      
+    } else {
+      // Standard Group Rendering
+      headerEl.appendChild(titleEl);
+      headerEl.appendChild(this._createGroupSettingsDropdown(group, actions));
+      groupEl.appendChild(headerEl);
+
+      const listEl = document.createElement("div");
+      listEl.className = "site-list";
+      listEl.dataset.groupId = group.id;
+
+      group.sites.forEach((site) => {
+        listEl.appendChild(this._createSiteElement(site, group.id, actions));
+      });
+
+      const addSiteBtn = document.createElement("button");
+      addSiteBtn.className = "add-site-btn";
+      addSiteBtn.innerHTML = `
+              <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                  <i data-lucide="square-plus" width="14" height="14" stroke-width="2"></i>
+                  <span data-i18n="add_site">${this.getTranslation("add_site")}</span>
+              </div>
+          `;
+      addSiteBtn.addEventListener("click", () =>
+        actions.onOpenAddSiteModal(group.id),
+      );
+
+      groupEl.appendChild(listEl);
+      groupEl.appendChild(addSiteBtn);
+    }
 
     return groupEl;
   }
 
-  _createGroupSettingsDropdown(group, actions) {
+  _createGroupSettingsDropdown(group, actions, widgetType = null) {
     const wrap = document.createElement("div");
     wrap.className = "group-settings-wrap";
 
@@ -572,8 +692,24 @@ class UIManager {
       }
     });
 
-    dropdown.appendChild(renameBtn);
-    dropdown.appendChild(delBtn);
+    if (widgetType) {
+      // Clock Widget Buttons
+      const toggleClockBtn = document.createElement("button");
+      const isAnalog = widgetType === "analog";
+      toggleClockBtn.innerHTML = `<i data-lucide="${isAnalog ? 'clock-4' : 'clock'}" width="14" height="14" stroke-width="1.5"></i> ${isAnalog ? 'تحويل إلى ساعة رقمية' : 'تحويل إلى ساعة عقارب'}`;
+      toggleClockBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        actions.onRenameGroup(group.id, isAnalog ? 'ساعة رقمية' : 'ساعة');
+        dropdown.classList.remove("show");
+      });
+      dropdown.appendChild(toggleClockBtn);
+      dropdown.appendChild(delBtn);
+    } else {
+      // Normal Group Buttons
+      dropdown.appendChild(renameBtn);
+      dropdown.appendChild(delBtn);
+    }
+    
     wrap.appendChild(triggerBtn);
     wrap.appendChild(dropdown);
 
