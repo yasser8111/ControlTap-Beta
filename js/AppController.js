@@ -488,7 +488,7 @@ class AppController {
 
         await this.ui.applySettings(settings, this.mediaStorage);
         this._onStateChange(true);
-        this.ui.toggleModal("customize", false);
+        // Modal remains open as per user request
       });
 
     const saveAsTemplateBtn = document.getElementById("saveAsTemplateBtn");
@@ -530,7 +530,7 @@ class AppController {
         }
 
         this._onStateChange(true);
-        this.ui.toggleModal("customize", false);
+        // Modal remains open as per user request
       });
     }
 
@@ -607,7 +607,7 @@ class AppController {
         settings.hideScrollbar = inputs.hideScrollbar.checked;
       this.ui.applySettings(settings, this.mediaStorage);
       this._onStateChange(true);
-      this.ui.toggleModal("settings", false);
+      // Modal remains open as per user request
     });
 
     if (inputs.showSearchBar) {
@@ -650,7 +650,7 @@ class AppController {
           
           this.ui.applySettings(settings, this.mediaStorage);
           this._onStateChange(true);
-          this.ui.toggleModal("settings", false);
+          // Modal remains open as per user request
         }
       });
     }

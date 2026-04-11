@@ -81,7 +81,7 @@ class UIManager {
       video.autoplay = options.autoplay !== false;
       video.loop = true;
       video.playsInline = true;
-      if (options.className) video.className = options.className;
+      video.className = options.className || "preview-video-box";
       return video;
     } else {
       const img = document.createElement("div");
@@ -92,18 +92,47 @@ class UIManager {
   }
 
   /**
-   * Creates a placeholder for a lucide icon. 
-   * The library should be triggered after these elements are in the DOM.
+   * Creates a Lucide icon as a live SVG element.
+   * Uses lucide.createElement() directly so event listeners are NEVER lost
+   * (the old <i> placeholder approach caused listeners to be lost when
+   *  lucide.createIcons() replaced the element with a new SVG node).
    * @private
    */
   _createLucideIcon(iconName, attrs = {}) {
+    // Build normalised attribute map (camelCase → kebab-case where needed)
+    const mappedAttrs = {};
+    Object.entries(attrs).forEach(([k, v]) => {
+      const attrName = k === "strokeWidth" ? "stroke-width" : k;
+      mappedAttrs[attrName] = v;
+    });
+
+    // Prefer direct SVG creation so event listeners survive
+    if (typeof lucide !== "undefined" && typeof lucide.createElement === "function") {
+      // Convert kebab-case icon name to Lucide's PascalCase export name
+      // e.g. "trash-2" → "Trash2", "plus-circle" → "PlusCircle"
+      const pascalName = iconName
+        .split("-")
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join("");
+      const iconDef = lucide[pascalName];
+      if (iconDef) {
+        const svgEl = lucide.createElement(iconDef);
+        Object.entries(mappedAttrs).forEach(([k, v]) => {
+          if (k === "class") {
+            svgEl.setAttribute("class", v);
+          } else {
+            svgEl.setAttribute(k, v);
+          }
+        });
+        svgEl.setAttribute("aria-hidden", "true");
+        return svgEl;
+      }
+    }
+
+    // Fallback: <i> placeholder (requires lucide.createIcons() to be called later)
     const i = document.createElement("i");
     i.setAttribute("data-lucide", iconName);
-    Object.entries(attrs).forEach(([k, v]) => {
-      // Map strokeWidth to stroke-width for Lucide compatibility
-      const attrName = k === "strokeWidth" ? "stroke-width" : k;
-      i.setAttribute(attrName, v);
-    });
+    Object.entries(mappedAttrs).forEach(([k, v]) => i.setAttribute(k, v));
     return i;
   }
 
@@ -642,7 +671,7 @@ class UIManager {
       headerActions.className = "group-header-actions";
 
       const addBtn = this._createLucideIcon("plus", { width: 14, height: 14, strokeWidth: 1.5 });
-      addBtn.className = "group-action-btn add-site-action";
+      addBtn.setAttribute("class", "group-action-btn add-site-action");
       addBtn.title = this.getTranslation("add_site");
       addBtn.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -650,7 +679,7 @@ class UIManager {
       });
 
       const delBtn = this._createLucideIcon("trash-2", { width: 14, height: 14, strokeWidth: 1.5 });
-      delBtn.className = "group-action-btn delete-group-action";
+      delBtn.setAttribute("class", "group-action-btn delete-group-action");
       delBtn.title = this.getTranslation("delete_group");
       delBtn.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -727,7 +756,7 @@ class UIManager {
     actionsWrap.className = "site-actions";
 
     const editSiteBtn = this._createLucideIcon("pencil", { width: 12, height: 12, strokeWidth: 1.5 });
-    editSiteBtn.className = "site-action-btn edit-site-btn";
+    editSiteBtn.setAttribute("class", "site-action-btn edit-site-btn");
     editSiteBtn.setAttribute(
       "aria-label",
       this.getTranslation("edit_site_aria") || "تعديل",
@@ -741,7 +770,7 @@ class UIManager {
     });
 
     const delSiteBtn = this._createLucideIcon("trash-2", { width: 12, height: 12, strokeWidth: 1.5 });
-    delSiteBtn.className = "site-action-btn delete-site-btn";
+    delSiteBtn.setAttribute("class", "site-action-btn delete-site-btn");
     delSiteBtn.setAttribute(
       "aria-label",
       `${this.getTranslation("delete_site_aria")} ${site.name}`,

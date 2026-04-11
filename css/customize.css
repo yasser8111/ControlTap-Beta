@@ -397,6 +397,20 @@
   justify-content: center;
 }
 
+.preview-video-box {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.preview-img-box {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+}
+
 .customize-footer-premium {
   display: flex;
   gap: 12px;

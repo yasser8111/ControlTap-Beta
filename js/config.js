@@ -48,22 +48,6 @@ const UI_TEMPLATES = [
     theme: "dark",
   },
   {
-    id: "tem-1115",
-    type: "image",
-    url: "backgrounds/1115.jpg",
-    color: "#2C5F8E",
-    opacity: 0.3,
-    theme: "dark",
-  },
-  {
-    id: "tem-1116",
-    type: "image",
-    url: "backgrounds/1116.jpg",
-    color: "#E63946",
-    opacity: 0.2,
-    theme: "dark",
-  },
-  {
     id: "tem-1117",
     type: "video",
     url: "backgrounds/1117.webm",
