@@ -92,16 +92,18 @@ class UIManager {
   }
 
   /**
-   * Creates a lucide icon and triggers the library to render it.
+   * Creates a placeholder for a lucide icon. 
+   * The library should be triggered after these elements are in the DOM.
    * @private
    */
   _createLucideIcon(iconName, attrs = {}) {
     const i = document.createElement("i");
     i.setAttribute("data-lucide", iconName);
-    Object.entries(attrs).forEach(([k, v]) => i.setAttribute(k, v));
-    if (typeof lucide !== "undefined") {
-      lucide.createIcons({ icons: { [iconName]: lucide.icons[iconName] }, nameAttr: 'data-lucide' });
-    }
+    Object.entries(attrs).forEach(([k, v]) => {
+      // Map strokeWidth to stroke-width for Lucide compatibility
+      const attrName = k === "strokeWidth" ? "stroke-width" : k;
+      i.setAttribute(attrName, v);
+    });
     return i;
   }
 
@@ -639,7 +641,7 @@ class UIManager {
       const headerActions = document.createElement("div");
       headerActions.className = "group-header-actions";
 
-      const addBtn = this._createLucideIcon("plus", { width: 16, height: 16, strokeWidth: 2 });
+      const addBtn = this._createLucideIcon("plus", { width: 14, height: 14, strokeWidth: 1.5 });
       addBtn.className = "group-action-btn add-site-action";
       addBtn.title = this.getTranslation("add_site");
       addBtn.addEventListener("click", (e) => {
@@ -647,7 +649,7 @@ class UIManager {
         actions.onOpenAddSiteModal(group.id);
       });
 
-      const delBtn = this._createLucideIcon("trash-2", { width: 16, height: 16, strokeWidth: 2 });
+      const delBtn = this._createLucideIcon("trash-2", { width: 14, height: 14, strokeWidth: 1.5 });
       delBtn.className = "group-action-btn delete-group-action";
       delBtn.title = this.getTranslation("delete_group");
       delBtn.addEventListener("click", (e) => {
@@ -724,7 +726,7 @@ class UIManager {
     const actionsWrap = document.createElement("div");
     actionsWrap.className = "site-actions";
 
-    const editSiteBtn = this._createLucideIcon("pencil", { width: 14, height: 14, strokeWidth: 2 });
+    const editSiteBtn = this._createLucideIcon("pencil", { width: 12, height: 12, strokeWidth: 1.5 });
     editSiteBtn.className = "site-action-btn edit-site-btn";
     editSiteBtn.setAttribute(
       "aria-label",
@@ -738,7 +740,7 @@ class UIManager {
       }
     });
 
-    const delSiteBtn = this._createLucideIcon("trash-2", { width: 14, height: 14, strokeWidth: 2 });
+    const delSiteBtn = this._createLucideIcon("trash-2", { width: 12, height: 12, strokeWidth: 1.5 });
     delSiteBtn.className = "site-action-btn delete-site-btn";
     delSiteBtn.setAttribute(
       "aria-label",
@@ -826,7 +828,7 @@ class UIManager {
         highlightedText = sug.text.replace(regex, '<span class="suggestion-highlight">$1</span>');
       }
 
-      const iconDiv = this._createLucideIcon(icon, { width: 16, height: 16, strokeWidth: 2 });
+      const iconDiv = this._createLucideIcon(icon, { width: 14, height: 14, strokeWidth: 1.5 });
       iconDiv.classList.add("suggestion-item-icon");
 
       const innerDiv = document.createElement("div");

@@ -45,6 +45,11 @@ class WidgetManager {
       groupEl.classList.add('widget-card');
     }
     config.render(group, groupEl, actions, ui);
+    
+    // Ensure icons inside widgets are rendered
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
   }
 
   /**
@@ -67,7 +72,7 @@ class WidgetManager {
    * @private
    */
   _createWidgetDeleteBtn(group, actions, ui) {
-    const btn = ui._createLucideIcon('trash-2', { width: 16, height: 16, strokeWidth: 2 });
+    const btn = ui._createLucideIcon('trash-2', { width: 14, height: 14, strokeWidth: 1.5 });
     btn.className = 'widget-delete-btn';
     btn.setAttribute('aria-label', ui.getTranslation('delete_group'));
     btn.addEventListener('click', (e) => {

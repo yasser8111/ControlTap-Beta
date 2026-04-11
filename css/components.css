@@ -207,8 +207,8 @@
   border: none;
   color: var(--text-color);
   cursor: pointer;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   opacity: 0;
   transition:
     background-color 0.2s,
@@ -332,8 +332,8 @@
   border: none;
   color: var(--text-color);
   cursor: pointer;
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   padding: 0;
   border-radius: 6px;
   display: flex;
