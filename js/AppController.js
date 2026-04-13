@@ -1099,6 +1099,13 @@ class AppController {
           const finalUrl = /^https?:\/\//i.test(query) ? query : `https://${query}`;
           window.open(finalUrl, target);
         } else {
+          const state = this.stateManager.getState();
+          state.searchHistory = state.searchHistory || [];
+          state.searchHistory = state.searchHistory.filter(h => h !== query);
+          state.searchHistory.unshift(query);
+          if (state.searchHistory.length > 30) state.searchHistory.pop();
+          this.stateManager.save();
+          
           const encodedQuery = encodeURIComponent(query);
           window.open(`https://www.google.com/search?q=${encodedQuery}`, target);
         }
