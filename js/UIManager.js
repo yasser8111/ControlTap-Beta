@@ -59,6 +59,69 @@ class UIManager {
     };
 
     this.objectUrlBlob = null;
+    this._initIconTooltip();
+  }
+
+  /**
+   * Initializes the global tooltip for icon-only mode.
+   * @private
+   */
+  _initIconTooltip() {
+    this.iconTooltip = document.getElementById("iconTooltip");
+    if (!this.iconTooltip) return;
+
+    this.tooltipTitle = this.iconTooltip.querySelector(".tooltip-title");
+    this.tooltipDesc = this.iconTooltip.querySelector(".tooltip-desc");
+
+    // We use event delegation on the board for efficiency
+    this.elements.board.addEventListener("mouseover", (e) => {
+      if (!document.body.classList.contains("icon-only-mode")) return;
+      
+      const siteItem = e.target.closest(".site-item");
+      if (siteItem) {
+        const titleEl = siteItem.querySelector(".site-name");
+        const descEl = siteItem.querySelector(".site-desc");
+        
+        if (titleEl) {
+          this.tooltipTitle.textContent = titleEl.textContent;
+          this.tooltipTitle.style.display = "block";
+        } else {
+          this.tooltipTitle.style.display = "none";
+        }
+
+        const hideDesc = window.App?.stateManager?.getState()?.settings?.hideDescription;
+        if (descEl && !hideDesc) {
+          this.tooltipDesc.textContent = descEl.textContent;
+          this.tooltipDesc.style.display = "block";
+        } else {
+          this.tooltipDesc.style.display = "none";
+        }
+
+        this.iconTooltip.style.opacity = "1";
+        this.iconTooltip.style.transform = "scale(1)";
+      }
+    });
+
+    this.elements.board.addEventListener("mousemove", (e) => {
+      if (!document.body.classList.contains("icon-only-mode")) return;
+      
+      if (this.iconTooltip.style.opacity === "1") {
+        const x = e.clientX + 15;
+        const y = e.clientY + 15;
+        this.iconTooltip.style.left = `${x}px`;
+        this.iconTooltip.style.top = `${y}px`;
+      }
+    });
+
+    this.elements.board.addEventListener("mouseout", (e) => {
+      if (!document.body.classList.contains("icon-only-mode")) return;
+      
+      const siteItem = e.target.closest(".site-item");
+      if (siteItem) {
+        this.iconTooltip.style.opacity = "0";
+        this.iconTooltip.style.transform = "scale(0.95)";
+      }
+    });
   }
 
   /**

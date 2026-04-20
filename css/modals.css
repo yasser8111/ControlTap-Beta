@@ -487,49 +487,45 @@ body.icon-only-mode .site-item:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
-/* Icon-Only: Floating Action Menu (appears on hover below the icon) */
+/* Icon-Only: Disable site actions completely */
 body.icon-only-mode .site-item .site-actions {
-  position: absolute;
-  bottom: -8px;
-  left: 50%;
-  transform: translateX(-50%) translateY(100%) scale(0.9);
-  width: auto !important;
-  opacity: 0;
-  pointer-events: none;
-  background: var(--modal-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-radius: 10px;
-  padding: 4px;
-  box-shadow:
-    0 6px 20px rgba(0, 0, 0, 0.18),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-color);
-  display: flex;
-  gap: 2px;
-  transition:
-    opacity 0.18s ease,
-    transform 0.18s ease;
-  z-index: 100;
+  display: none !important;
 }
 
-body.icon-only-mode .site-item:hover .site-actions {
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateX(-50%) translateY(100%) scale(1);
-  margin: 0;
-}
-
-body.icon-only-mode .site-item .site-actions .site-action-btn {
-  width: 28px;
-  height: 28px;
+/* Custom Tooltip for Icon-Only Mode */
+#iconTooltip {
+  position: fixed;
+  background: rgba(15, 23, 42, 0.85); /* Dark blur */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: white;
+  padding: 8px 12px;
   border-radius: 8px;
-  opacity: 0.7;
+  font-size: 13px;
+  font-weight: 500;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.1s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: center;
+  max-width: 200px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
-body.icon-only-mode .site-item .site-actions .site-action-btn:hover {
-  opacity: 1;
-  background: rgba(var(--primary-color-rgb, 59, 130, 246), 0.12);
+#iconTooltip .tooltip-title {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+#iconTooltip .tooltip-desc {
+  font-size: 11px;
+  opacity: 0.7;
 }
 
 /* ==========================================================================
