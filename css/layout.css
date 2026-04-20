@@ -71,7 +71,15 @@
 .social-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
+  background: rgba(var(--card-bg-rgb), var(--card-opacity));
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-color);
+  padding: 4px 6px;
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow);
+  transition: background-color 0.3s, border-color 0.3s;
 }
 
 /* Mobile Responsiveness for Header */
