@@ -55,6 +55,8 @@ class UIManager {
         pagesTabs: document.getElementById("pagesTabs"),
         searchBarWrapper: document.getElementById("searchBarWrapper"),
         searchSizeControlWrap: document.getElementById("searchSizeControlWrap"),
+        youtubeBg: document.getElementById("youtubeBgContainer"),
+        youtubePlayer: document.getElementById("youtubeBgPlayer"),
       },
     };
 
@@ -320,12 +322,29 @@ class UIManager {
         bgVideo.style.display = "none";
       }
     } else if (settings.bgType === "videoUrl") {
-      root.style.setProperty("--bg-image", "none");
-      document.body.style.backgroundImage = "none";
-      bgVideo.src = settings.bgImage;
-      bgVideo.style.display = "block";
-      bgVideo.play().catch((e) => console.warn("Autoplay blocked:", e));
+      const youtubeId = this._getYoutubeId(settings.bgImage);
+      
+      if (youtubeId) {
+        // YouTube logic
+        bgVideo.style.display = "none";
+        bgVideo.pause();
+        if (this.elements.containers.youtubeBg) {
+          this.elements.containers.youtubeBg.style.display = "block";
+          this.elements.containers.youtubePlayer.src = `https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&playlist=${youtubeId}&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1`;
+        }
+        root.style.setProperty("--bg-image", "none");
+        document.body.style.backgroundImage = "none";
+      } else {
+        // Direct video logic
+        if (this.elements.containers.youtubeBg) this.elements.containers.youtubeBg.style.display = "none";
+        root.style.setProperty("--bg-image", "none");
+        document.body.style.backgroundImage = "none";
+        bgVideo.src = settings.bgImage;
+        bgVideo.style.display = "block";
+        bgVideo.play().catch((e) => console.warn("Autoplay blocked:", e));
+      }
     } else {
+      if (this.elements.containers.youtubeBg) this.elements.containers.youtubeBg.style.display = "none";
       root.style.setProperty("--bg-image", "none");
       document.body.style.backgroundImage = "none";
       bgVideo.style.display = "none";
@@ -1132,5 +1151,16 @@ class UIManager {
         container.scrollBy({ top: hiddenAmount + 12, behavior: "smooth" }); // 12px bottom space
       }
     }
+  }
+
+  /**
+   * Extracts the YouTube ID from a URL.
+   * @private
+   */
+  _getYoutubeId(url) {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return match && match[2].length === 11 ? match[2] : null;
   }
 }
