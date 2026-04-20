@@ -46,7 +46,7 @@ class AppController {
       exportDataBtn: document.getElementById("exportDataBtn"),
       importDataBtn: document.getElementById("importDataBtn"),
       importFileInput: document.getElementById("importFileInput"),
-      colorHexLabel: document.getElementById("colorHexLabel"),
+      primaryColorHexInput: document.getElementById("primaryColorHexInput"),
       colCountInput: document.getElementById("colCountInput"),
       cardSizeInput: document.getElementById("cardSizeInput"),
       searchSizeInput: document.getElementById("searchSizeInput"),
@@ -395,8 +395,8 @@ class AppController {
               : "";
         }
 
-        if (this.el.colorHexLabel)
-          this.el.colorHexLabel.value = settings.primaryColor.toUpperCase();
+        if (this.el.primaryColorHexInput)
+          this.el.primaryColorHexInput.value = settings.primaryColor.toUpperCase();
         this.originalCustomizeSettings = JSON.parse(JSON.stringify(settings));
 
         if (containers.opacityValue) {
@@ -664,15 +664,13 @@ class AppController {
         state.customTemplates = state.customTemplates || [];
         state.customTemplates.unshift({
           id: `tem-custom-${Date.now()}`,
-          name: templateName, // Will be used as fallback since translation for this dynamic id won't exist
+          name: templateName,
           type: isVideo ? "video" : "image",
-          // For local files we cannot easily keep a generic template if media is overwritten,
-          // but for simple cases we just copy the settings.
-          // Since bgImage holds preset url or video url, or it is a local file which relies on IndexedDB:
           url: settings.bgType.startsWith("local") ? "" : settings.bgImage,
           color: settings.primaryColor,
           opacity: settings.cardOpacity,
           theme: settings.themeMode,
+          fullSettings: JSON.parse(JSON.stringify(settings)),
           isCustom: true,
         });
 
@@ -1006,10 +1004,20 @@ class AppController {
       settings.bgType = template.type === "video" ? "videoUrl" : "preset";
     }
 
-    settings.bgImage = template.url || "";
-    settings.primaryColor = template.color;
-    settings.cardOpacity = template.opacity;
-    settings.themeMode = template.theme;
+    if (template.fullSettings) {
+      // Merge full settings for complete template restoration
+      Object.assign(settings, template.fullSettings);
+    } else {
+      settings.bgImage = template.url || "";
+      settings.primaryColor = template.color;
+      settings.cardOpacity = template.opacity;
+      settings.themeMode = template.theme;
+      // Predefined templates defaults for layout
+      settings.hideBorders = template.hideBorders !== undefined ? template.hideBorders : true;
+      settings.iconOnlyMode = template.iconOnlyMode || false;
+      settings.hideIconBg = template.hideIconBg || false;
+      if (template.columnsCount) settings.columnsCount = template.columnsCount;
+    }
 
     await this.ui.applySettings(settings, this.mediaStorage);
     this._onStateChange(true);

@@ -118,7 +118,10 @@
     "dir_ltr": "من اليسار لليمين (LTR)",
     "bg_url_placeholder": "أو أدخل رابط صورة / فيديو للخلفية...",
     "hide_borders": "إخفاء الحواف والإطارات",
-    "hide_borders_hint": "إزالة جميع الحدود من المجموعات والبطاقات والعناصر"
+    "hide_borders_hint": "إزالة جميع الحدود من المجموعات والبطاقات والعناصر",
+    "hide_icon_bg": "إخفاء خلفية الأيقونات",
+    "hide_icon_bg_hint": "إزالة الخلفية من شعارات المواقع لجعلها شفافة",
+    "browse_library": "استكشاف مكتبة القوالب"
   },
   "en": {
     "page_title": "ControlTap | Custom New Tab",
@@ -239,6 +242,9 @@
     "dir_ltr": "Left-to-Right (LTR)",
     "bg_url_placeholder": "Or enter an image/video URL for the background...",
     "hide_borders": "Hide Borders & Outlines",
-    "hide_borders_hint": "Remove all borders from groups, cards, and elements"
+    "hide_borders_hint": "Remove all borders from groups, cards, and elements",
+    "hide_icon_bg": "Hide Icon Backgrounds",
+    "hide_icon_bg_hint": "Remove background styling from site icons for a cleaner look",
+    "browse_library": "Explore Template Library"
   }
 }

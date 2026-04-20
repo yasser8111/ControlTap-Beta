@@ -443,6 +443,25 @@ class UIManager {
     });
     grid.appendChild(createItem);
 
+    // Browse Library Item
+    const browseItem = document.createElement("div");
+    browseItem.className = "template-item browse-templates-card";
+    const libraryIcon = this._createLucideIcon("library", {
+      width: 36,
+      height: 36,
+      style: "color: var(--primary-color)",
+    });
+    const browseLabel = document.createElement("span");
+    browseLabel.className = "template-create-title";
+    browseLabel.textContent = this.getTranslation("browse_library"); // Use translation
+    
+    browseItem.appendChild(libraryIcon);
+    browseItem.appendChild(browseLabel);
+    browseItem.addEventListener("click", () => {
+      window.open("https://github.com/yasser8111/ControlTab-extension", "_blank");
+    });
+    grid.appendChild(browseItem);
+
     // Render Template List
     allTemplates.forEach((template) => {
       const item = document.createElement("div");
@@ -463,7 +482,7 @@ class UIManager {
 
       const previewContainer = document.createElement("div");
       previewContainer.className = "template-preview";
-      previewContainer.style.background = template.color;
+      previewContainer.style.background = template.color || "var(--card-bg)";
 
       const mediaEl = this._createMediaElement(renderUrl || "", isVideo, {
         autoplay: false,
