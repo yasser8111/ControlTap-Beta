@@ -1005,15 +1005,28 @@ class AppController {
     }
 
     if (template.fullSettings) {
-      // Merge full settings for complete template restoration
-      Object.assign(settings, template.fullSettings);
+      const designKeys = [
+        "bgType",
+        "bgImage",
+        "primaryColor",
+        "cardOpacity",
+        "themeMode",
+        "hideBorders",
+        "hideIconBg",
+        "columnsCount",
+      ];
+      designKeys.forEach((key) => {
+        if (template.fullSettings[key] !== undefined) {
+          settings[key] = template.fullSettings[key];
+        }
+      });
     } else {
       settings.bgImage = template.url || "";
       settings.primaryColor = template.color;
       settings.cardOpacity = template.opacity;
       settings.themeMode = template.theme;
-      // Predefined templates defaults for layout
-      settings.hideBorders = template.hideBorders !== undefined ? template.hideBorders : true;
+      settings.hideBorders =
+        template.hideBorders !== undefined ? template.hideBorders : true;
       settings.iconOnlyMode = template.iconOnlyMode || false;
       settings.hideIconBg = template.hideIconBg || false;
       if (template.columnsCount) settings.columnsCount = template.columnsCount;
